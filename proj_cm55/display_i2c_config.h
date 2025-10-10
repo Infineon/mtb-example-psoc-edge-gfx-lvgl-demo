@@ -1,12 +1,11 @@
 /*******************************************************************************
-* File Name        : lv_port_disp.h
+* File Name        : display_i2c_config.h
 *
-* Description      : This file provides constants and function prototypes
-*                    for configuring low level display driver in LVGL.
+* Description      : This file provides defines for Display I2C.
 *
 * Related Document : See README.md
 *
-*******************************************************************************
+********************************************************************************
 * (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
 * This software, associated documentation and materials ("Software") is owned by
 * Infineon Technologies AG or one of its affiliates ("Infineon") and is protected
@@ -30,53 +29,19 @@
 * explicitly approved by Infineon, the Software may not be used in any application
 * where a failure of the Product or any consequences of the use thereof can
 * reasonably be expected to result in personal injury.
-******************************************************************************/
-
-#ifndef LV_PORT_DISP_H
-#define LV_PORT_DISP_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-/*******************************************************************************
-* Header Files
-*******************************************************************************/
-#include "cybsp.h"
-#include "cy_pdl.h"
-#include "cycfg.h"
-
-#include "lvgl.h"
-
-
-/*******************************************************************************
-* Macros
 *******************************************************************************/
 
-#if defined(MTB_DISPLAY_W4P3INCH_RPI)
-#define MY_DISP_VER_RES                              (480U)
-#define MY_DISP_HOR_RES                              (832U)
+
+/* Display I2C controller */
+#ifdef USE_KIT_PSE84_AI
+#define DISPLAY_I2C_CONTROLLER_HW     CYBSP_I2C_DISPLAY_CONTROLLER_HW
+#define DISPLAY_I2C_CONTROLLER_IRQ    CYBSP_I2C_DISPLAY_CONTROLLER_IRQ
+#define DISPLAY_I2C_CONTROLLER_config CYBSP_I2C_DISPLAY_CONTROLLER_config
 #else
-#define MY_DISP_VER_RES                              (600U)
-#define MY_DISP_HOR_RES                              (1024U)
-#endif
-extern cy_stc_gfx_context_t gfx_context;
-extern void *frame_buffer1;
-extern void *frame_buffer2;
-
-/*******************************************************************************
-* Function Prototypes
-*******************************************************************************/
-/* Initialize low level display driver */
-void lv_port_disp_init(void);
-
-
-#ifdef __cplusplus
-} /*extern "C"*/
+#define DISPLAY_I2C_CONTROLLER_HW     CYBSP_I2C_CONTROLLER_HW
+#define DISPLAY_I2C_CONTROLLER_IRQ    CYBSP_I2C_CONTROLLER_IRQ
+#define DISPLAY_I2C_CONTROLLER_config CYBSP_I2C_CONTROLLER_config
 #endif
 
 
-#endif /*LV_PORT_DISP_H*/
-
-/* [] END OF FILE */
+/*--END OF FILE--*/

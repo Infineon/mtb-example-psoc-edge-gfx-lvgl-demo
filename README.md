@@ -1,6 +1,6 @@
 # PSOC&trade; Edge MCU: Graphics LVGL demo
 
-This code example demonstrates how to render a 2D graphics demo using the Light and Versatile Graphics (LVGL) on the PSOC&trade; Edge MCU with the following supported displays. 
+This code example demonstrates how to render a 2D graphics demo using the Light and Versatile Graphics (LVGL) on the PSOC&trade; Edge MCU with the following supported displays.
 
 - Waveshare 4.3-inch Raspberry Pi DSI 800x480 pixel display
 - Waveshare 7-inch Raspberry Pi DSI LCD C 1024x600 pixel display
@@ -10,7 +10,7 @@ The 2D graphics showcase a music player application, which is featured as one of
 
 This code example has a three project structure: CM33 secure, CM33 non-secure, and CM55 projects. All three projects are programmed to the external QSPI flash and executed in Execute in Place (XIP) mode. Extended boot launches the CM33 secure project from a fixed location in the external flash, which then configures the protection settings and launches the CM33 non-secure application. Additionally, CM33 non-secure application enables CM55 CPU and launches the CM55 application. The CM55 application implements the logic for this code example.
 
-> **Note:** This application builds for the 4.3-inch display by default. 
+> **Note:** This application builds for the 4.3-inch display by default.
 
    ```
    CONFIG_DISPLAY=W4P3INCH_DISP
@@ -32,7 +32,7 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-gfx-lvgl-demo)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJtYWp1bWRhciIsIkRvYyB2ZXJzaW9uIjoiMi4wLjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJtYWp1bWRhciIsIkRvYyB2ZXJzaW9uIjoiMi4xLjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
@@ -57,6 +57,7 @@ See the [Design and implementation](docs/design_and_implementation.md) for the f
 
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC2`) – Default value of `TARGET`
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC4`)
+- [PSOC&trade; Edge E84 AI Kit](https://www.infineon.com/KIT_PSE84_AI) (`KIT_PSE84_AI`)
 
 
 ## Hardware setup
@@ -67,20 +68,25 @@ Ensure the following jumper and pin configuration on board.
 - BOOT SW must be in the HIGH/ON position
 - J20 and J21 must be in the tristate/not connected (NC) position
 
-### Supported display and electrical connection with KIT_PSE84_EVAL 
+> **Note:** This hardware setup is not required for KIT_PSE84_AI.
+
+### Supported display and electrical connection
 
 1. **Waveshare 4.3 inch Raspberry Pi DSI 800*480 pixel display:** This display is supported by default <br>
 
-   Connect the FPC 15-pin cable between the display connector and the PSOC&trade; Edge E84 evaluation kit's RPI MIPI DSI connector as shown in **Figure 1** <br>
+   Connect the FPC 15-pin cable between the display connector and the PSOC&trade; Edge E84 kit's RPi MIPI DSI connector as shown in **Figure 1** <br>
 
-   **Table 1: PSOC&trade; Edge E84 evaluation kit connections**
+   **Table 1. Cable connection between display connector and kit**
 
-   Display's Connector | PSOC&trade; Edge E84 Evaluation Kit's connector
-   ------------------- | ----------------------------------------------------
-   DSI connector       | J38
+   Kit's name                                      | DSI connector
+   ----------------------------------------------- | --------------
+   PSOC&trade; Edge E84 Evaluation Kit             | J39
+   PSOC&trade; Edge E84 AI Kit                     | J10
+
+   > **Note:** The PSOC&trade; Edge E84 AI kit supports Waveshare 4.3 inch Raspberry Pi DSI 800*480 pixel display.
 
    **Figure 1.  Display connection with PSOC&trade; Edge E84 evaluation kit**
-   
+
    ![](images/display-kit-connection.png)
 
 2. **Waveshare 7-inch Raspberry-Pi DSI LCD C 1024*600 pixel display:** <br>
@@ -138,7 +144,7 @@ This example requires no additional software or tools.
 
 See [Using the code example](docs/using_the_code_example.md) for instructions on creating a project, opening it in various supported IDEs, and performing tasks, such as building, programming, and debugging the application within the respective IDEs.
 
-1. Connect the selected LCD display to the board according to the instructions given in [Display setup](#supported-display-and-electrical-connection-with-kit_pse84_eval) section 
+1. Connect the selected LCD display to the board according to the instructions given in [Display setup](#supported-display-and-electrical-connection-with-kit_pse84_eval) section
 
 2. Connect the board to your PC using the provided USB cable through the KitProg3 USB connector
 
@@ -234,7 +240,7 @@ Document title: *CE239259* - *PSOC&trade; Edge MCU: Graphics LVGL demo*
  ------- | ---------------------
  1.x.0   | New code example <br> Early access release
  2.0.0   | GitHub release
- 
+ 2.1.0   | Added KIT_PSE84_AI BSP support
 <br>
 
 

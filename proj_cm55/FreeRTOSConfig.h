@@ -78,7 +78,7 @@ extern uint32_t SystemCoreClock;
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
 #define configENABLE_MVE                        0
 
-/* Compile-time macros to enable or disable TrustZone, Memory Protection Unit (MPU) and Floating Point Unit (FPU) support. */ 
+/* Compile-time macros to enable or disable TrustZone, Memory Protection Unit (MPU) and Floating Point Unit (FPU) support. */
 #if defined(MTB_SOFTFLOAT)
 #define configENABLE_FPU                        0
 #else

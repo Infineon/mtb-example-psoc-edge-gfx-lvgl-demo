@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2023-2025, Cypress Semiconductor Corporation (an Infineon company)
+# (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG.
 # SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,11 +44,11 @@ CY_TOOLS_PATHS+=
 # found).
 CY_TOOLS_DIR=$(lastword $(sort $(wildcard $(CY_TOOLS_PATHS))))
 
-# Absolute path to the compiler's "bin" directory. The variable name depends on 
-# the toolchain used for the build. Refer to the ModusToolbox user guide to get 
+# Absolute path to the compiler's "bin" directory. The variable name depends on
+# the toolchain used for the build. Refer to the ModusToolbox user guide to get
 # the correct variable name for the toolchain used in your build.
 #
-# The default path depends on the selected TOOLCHAIN and is set in the 
+# The default path depends on the selected TOOLCHAIN and is set in the
 # Make recipe.
 CY_COMPILER_GCC_ARM_DIR?=
 

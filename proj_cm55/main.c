@@ -1,42 +1,35 @@
 /*******************************************************************************
 * File Name        : main.c
 *
-* Description      : This source file contains the main routine for 
+* Description      : This source file contains the main routine for
 *                    application running on CM55 CPU.
 *
 * Related Document : See README.md
 *
 ********************************************************************************
-* Copyright 2024-2025, Cypress Semiconductor Corporation (an Infineon company) or
-* an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
-*
-* This software, including source code, documentation and related
-* materials ("Software") is owned by Cypress Semiconductor Corporation
-* or one of its affiliates ("Cypress") and is protected by and subject to
-* worldwide patent protection (United States and foreign),
-* United States copyright laws and international treaty provisions.
-* Therefore, you may use this Software only as provided in the license
-* agreement accompanying the software package from which you
-* obtained this Software ("EULA").
-* If no EULA applies, Cypress hereby grants you a personal, non-exclusive,
-* non-transferable license to copy, modify, and compile the Software
-* source code solely for use in connection with Cypress's
-* integrated circuit products.  Any reproduction, modification, translation,
-* compilation, or representation of this Software except as specified
-* above is prohibited without the express written permission of Cypress.
-*
-* Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
-* reserves the right to make changes to the Software without notice. Cypress
-* does not assume any liability arising out of the application or use of the
-* Software or any product or circuit described in the Software. Cypress does
-* not authorize its products for use in any products where a malfunction or
-* failure of the Cypress product may reasonably be expected to result in
-* significant property damage, injury or death ("High Risk Product"). By
-* including Cypress's product in a High Risk Product, the manufacturer
-* of such system or application assumes all risk of such use and in doing
-* so agrees to indemnify Cypress against all liability.
+* (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
+* This software, associated documentation and materials ("Software") is owned by
+* Infineon Technologies AG or one of its affiliates ("Infineon") and is protected
+* by and subject to worldwide patent protection, worldwide copyright laws, and
+* international treaty provisions. Therefore, you may use this Software only as
+* provided in the license agreement accompanying the software package from which
+* you obtained this Software. If no license agreement applies, then any use,
+* reproduction, modification, translation, or compilation of this Software is
+* prohibited without the express written permission of Infineon.
+* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING,
+* BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF THIRD-PARTY RIGHTS AND
+* IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A SPECIFIC USE/PURPOSE OR
+* MERCHANTABILITY. Infineon reserves the right to make changes to the Software
+* without notice. You are responsible for properly designing, programming, and
+* testing the functionality and safety of your intended application of the
+* Software, as well as complying with any legal requirements related to its
+* use. Infineon does not guarantee that the Software will be free from intrusion,
+* data theft or loss, or other breaches ("Security Breaches"), and Infineon
+* shall have no liability arising out of any Security Breaches. Unless otherwise
+* explicitly approved by Infineon, the Software may not be used in any application
+* where a failure of the Product or any consequences of the use thereof can
+* reasonably be expected to result in personal injury.
 *******************************************************************************/
 
 /*******************************************************************************
@@ -65,7 +58,7 @@
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
 #include "demos/lv_demos.h"
-
+#include "display_i2c_config.h"
 
 /*******************************************************************************
 * Macros
@@ -119,7 +112,7 @@
 * Global Variables
 *******************************************************************************/
 /* Heap memory for VGLite to allocate memory for buffers, command, and
- * tessellation buffers 
+ * tessellation buffers
  */
 CY_SECTION(".cy_gpu_buf") uint8_t contiguous_mem[VGLITE_HEAP_SIZE] = { 0xFF };
 
@@ -145,7 +138,7 @@ cy_stc_scb_i2c_context_t disp_touch_i2c_controller_context;
 
 cy_stc_sysint_t disp_touch_i2c_controller_irq_cfg =
 {
-    .intrSrc      = CYBSP_I2C_CONTROLLER_IRQ,
+    .intrSrc      = DISPLAY_I2C_CONTROLLER_IRQ,
     .intrPriority = I2C_CONTROLLER_IRQ_PRIORITY,
 };
 
@@ -168,7 +161,7 @@ static mtb_hal_rtc_t rtc_obj;
 * Function Name: setup_run_time_stats_timer
 ********************************************************************************
 * Summary:
-*  This function configuresTCPWM 0 GRP 0 Counter 0 as the timer source for  
+*  This function configuresTCPWM 0 GRP 0 Counter 0 as the timer source for
 *  FreeRTOS runtime statistics.
 *
 * Parameters:
@@ -181,19 +174,19 @@ static mtb_hal_rtc_t rtc_obj;
 void setup_run_time_stats_timer(void)
 {
     /* Initialze TCPWM block with required timer configuration */
-    if (CY_TCPWM_SUCCESS != Cy_TCPWM_Counter_Init(CYBSP_GENERAL_PURPOSE_TIMER_HW, 
-        CYBSP_GENERAL_PURPOSE_TIMER_NUM, 
+    if (CY_TCPWM_SUCCESS != Cy_TCPWM_Counter_Init(CYBSP_GENERAL_PURPOSE_TIMER_HW,
+        CYBSP_GENERAL_PURPOSE_TIMER_NUM,
         &CYBSP_GENERAL_PURPOSE_TIMER_config))
     {
         handle_app_error();
     }
 
     /* Enable the initialized counter */
-    Cy_TCPWM_Counter_Enable(CYBSP_GENERAL_PURPOSE_TIMER_HW, 
+    Cy_TCPWM_Counter_Enable(CYBSP_GENERAL_PURPOSE_TIMER_HW,
                             CYBSP_GENERAL_PURPOSE_TIMER_NUM);
 
     /* Start the counter */
-    Cy_TCPWM_TriggerStart_Single(CYBSP_GENERAL_PURPOSE_TIMER_HW, 
+    Cy_TCPWM_TriggerStart_Single(CYBSP_GENERAL_PURPOSE_TIMER_HW,
                                  CYBSP_GENERAL_PURPOSE_TIMER_NUM);
 }
 
@@ -202,7 +195,7 @@ void setup_run_time_stats_timer(void)
 * Function Name: get_run_time_counter_value
 ********************************************************************************
 * Summary:
-*  Function to fetch run time counter value. This will be used by FreeRTOS for 
+*  Function to fetch run time counter value. This will be used by FreeRTOS for
 *  run time statistics calculation.
 *
 * Parameters:
@@ -214,7 +207,7 @@ void setup_run_time_stats_timer(void)
 *******************************************************************************/
 uint32_t get_run_time_counter_value(void)
 {
-   return (Cy_TCPWM_Counter_GetCounter(CYBSP_GENERAL_PURPOSE_TIMER_HW, 
+   return (Cy_TCPWM_Counter_GetCounter(CYBSP_GENERAL_PURPOSE_TIMER_HW,
                                        CYBSP_GENERAL_PURPOSE_TIMER_NUM));
 }
 
@@ -223,7 +216,7 @@ uint32_t get_run_time_counter_value(void)
 * Function Name: calculate_idle_percentage
 ********************************************************************************
 * Summary:
-*  Function to calculate CPU idle percentage. This function is used by LVGL to  
+*  Function to calculate CPU idle percentage. This function is used by LVGL to
 *  showcase CPU usage.
 *
 * Parameters:
@@ -373,7 +366,7 @@ static void dc_irq_handler(void)
     Cy_GFXSS_Clear_DC_Interrupt(GFXSS, &gfx_context);
 
     /* Notify the cm55_gfx_task */
-    xTaskNotifyFromISR(rtos_cm55_gfx_task_handle, 1, eSetValueWithOverwrite, 
+    xTaskNotifyFromISR(rtos_cm55_gfx_task_handle, 1, eSetValueWithOverwrite,
                        &xHigherPriorityTaskWoken);
 
     /* Perform a context switch if a higher-priority task was woken */
@@ -418,7 +411,7 @@ static void gpu_irq_handler(void)
 *******************************************************************************/
 static void disp_touch_i2c_controller_interrupt(void)
 {
-    Cy_SCB_I2C_Interrupt(CYBSP_I2C_CONTROLLER_HW, &disp_touch_i2c_controller_context);
+    Cy_SCB_I2C_Interrupt(DISPLAY_I2C_CONTROLLER_HW, &disp_touch_i2c_controller_context);
 }
 
 
@@ -427,11 +420,11 @@ static void disp_touch_i2c_controller_interrupt(void)
 ********************************************************************************
 * Summary:
 *   This is the FreeRTOS task callback function.
-*   It initializes:  
+*   It initializes:
 *       - GFX subsystem.
 *       - Configure the DC, GPU interrupts.
 *       - Initialize I2C interface to be used for touch as well as 7-inch display
-*         drivers. 
+*         drivers.
 *       - Initializes the display panel selected through Makefile component and
 *         vglite driver.
 *       - Allocates vglite memory.
@@ -488,7 +481,7 @@ static void cm55_gfx_task(void *arg)
 
         /* Initialize GFXSS DC interrupt */
         sysint_status = Cy_SysInt_Init(&dc_irq_cfg, dc_irq_handler);
- 
+
         if (CY_SYSINT_SUCCESS != sysint_status)
         {
             printf("Error in registering DC interrupt: %d\r\n", sysint_status);
@@ -506,7 +499,7 @@ static void cm55_gfx_task(void *arg)
             printf("Error in registering GPU interrupt: %d\r\n", sysint_status);
             handle_app_error();
         }
- 
+
         /* Enable GPU interrupt */
         Cy_GFXSS_Enable_GPU_Interrupt(GFXSS);
 
@@ -514,8 +507,8 @@ static void cm55_gfx_task(void *arg)
         NVIC_EnableIRQ(GFXSS_GPU_IRQ);
 
         /* Initialize the I2C in controller mode. */
-        i2c_result = Cy_SCB_I2C_Init(CYBSP_I2C_CONTROLLER_HW,
-                    &CYBSP_I2C_CONTROLLER_config, &disp_touch_i2c_controller_context);
+        i2c_result = Cy_SCB_I2C_Init(DISPLAY_I2C_CONTROLLER_HW,
+                    &DISPLAY_I2C_CONTROLLER_config, &disp_touch_i2c_controller_context);
 
         if (CY_SCB_I2C_SUCCESS != i2c_result)
         {
@@ -537,13 +530,13 @@ static void cm55_gfx_task(void *arg)
         NVIC_EnableIRQ(disp_touch_i2c_controller_irq_cfg.intrSrc);
 
         /* Enable the I2C */
-        Cy_SCB_I2C_Enable(CYBSP_I2C_CONTROLLER_HW);
+        Cy_SCB_I2C_Enable(DISPLAY_I2C_CONTROLLER_HW);
 
         vTaskDelay(pdMS_TO_TICKS(500));
 
 #if defined(MTB_DISPLAY_WS7P0DSI_RPI)
         /* Initialize the RPI display */
-        status = mtb_disp_ws7p0dsi_panel_init(CYBSP_I2C_CONTROLLER_HW,
+        status = mtb_disp_ws7p0dsi_panel_init(DISPLAY_I2C_CONTROLLER_HW,
                                               &disp_touch_i2c_controller_context);
 
         if (CY_RSLT_SUCCESS != status)
@@ -563,8 +556,8 @@ static void cm55_gfx_task(void *arg)
         }
 #elif defined(MTB_DISPLAY_W4P3INCH_RPI)
 
-        i2c_result = Cy_SCB_I2C_Init(CYBSP_I2C_CONTROLLER_HW,
-                    &CYBSP_I2C_CONTROLLER_config, &disp_touch_i2c_controller_context);
+        i2c_result = Cy_SCB_I2C_Init(DISPLAY_I2C_CONTROLLER_HW,
+                    &DISPLAY_I2C_CONTROLLER_config, &disp_touch_i2c_controller_context);
 
         if (CY_SCB_I2C_SUCCESS != i2c_result)
         {
@@ -586,16 +579,16 @@ static void cm55_gfx_task(void *arg)
         NVIC_EnableIRQ(disp_touch_i2c_controller_irq_cfg.intrSrc);
 
         /* Enable the I2C */
-        Cy_SCB_I2C_Enable(CYBSP_I2C_CONTROLLER_HW);
+        Cy_SCB_I2C_Enable(DISPLAY_I2C_CONTROLLER_HW);
 
          /* Initialize the Waveshare 4.3-Inch display */
-        i2c_result = mtb_disp_waveshare_4p3_init(CYBSP_I2C_CONTROLLER_HW, &disp_touch_i2c_controller_context);
+        i2c_result = mtb_disp_waveshare_4p3_init(DISPLAY_I2C_CONTROLLER_HW, &disp_touch_i2c_controller_context);
         if (CY_SCB_I2C_SUCCESS != i2c_result)
         {
             printf("Waveshare 4.3-Inch display init failed with status = %u\r\n", (unsigned int) i2c_result);
             CY_ASSERT(0);
         }
-        
+
 #endif
         /* Allocate memory for VGLite from the vglite_heap_base */
         vg_module_parameters_t vg_params;
@@ -653,7 +646,7 @@ static void cm55_gfx_task(void *arg)
 ********************************************************************************
 * Summary:
 *    1. This function configures and initializes the Real-Time Clock (RTC)).
-*    2. It then initializes the RTC HAL object to enable CLIB support library 
+*    2. It then initializes the RTC HAL object to enable CLIB support library
 *       to work with the provided Real-Time Clock (RTC) module.
 *
 * Parameters:
@@ -677,7 +670,7 @@ static void setup_clib_support(void)
 * Summary:
 *  This is the main function for CM55 non-secure application.
 *    1. It initializes the device and board peripherals.
-*    2. It sets up the LPtimer instance for CM55 CPU and initializes debug UART. 
+*    2. It sets up the LPtimer instance for CM55 CPU and initializes debug UART.
 *    3. It creates the FreeRTOS application task 'cm55_gfx_task'.
 *    4. It starts the RTOS task scheduler.
 *
