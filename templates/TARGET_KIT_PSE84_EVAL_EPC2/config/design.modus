@@ -3529,6 +3529,7 @@
                     <Parameters>
                         <Param id="mode" value="Device"/>
                         <Param id="timerEnable" value="true"/>
+                        <Param id="usbCounter#inFlash" value="false"/>
                         <Param id="usbCounter#usbCounter" value="AUTOPLACEDtcpwm[0].group[0].cnt[1]"/>
                     </Parameters>
                     <Personality template="usbCounter" instance="jZetNzFzV3U">
@@ -3537,9 +3538,6 @@
                                 <Alias value="CYBSP_USB_OS_TIMER_COUNTER"/>
                             </Aliases>
                         </Block>
-                        <Parameters>
-                            <Param id="inFlash" value="false"/>
-                        </Parameters>
                     </Personality>
                 </Personality>
                 <Personality template="memory" version="2.0" instance="6N2tM2roWpA">

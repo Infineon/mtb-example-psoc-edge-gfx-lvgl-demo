@@ -7,29 +7,33 @@
 * Related Document : See README.md
 *
 *******************************************************************************
-* (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
-* This software, associated documentation and materials ("Software") is owned by
-* Infineon Technologies AG or one of its affiliates ("Infineon") and is protected
-* by and subject to worldwide patent protection, worldwide copyright laws, and
-* international treaty provisions. Therefore, you may use this Software only as
-* provided in the license agreement accompanying the software package from which
-* you obtained this Software. If no license agreement applies, then any use,
-* reproduction, modification, translation, or compilation of this Software is
-* prohibited without the express written permission of Infineon.
-* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
-* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING,
-* BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF THIRD-PARTY RIGHTS AND
-* IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A SPECIFIC USE/PURPOSE OR
-* MERCHANTABILITY. Infineon reserves the right to make changes to the Software
-* without notice. You are responsible for properly designing, programming, and
-* testing the functionality and safety of your intended application of the
-* Software, as well as complying with any legal requirements related to its
-* use. Infineon does not guarantee that the Software will be free from intrusion,
-* data theft or loss, or other breaches ("Security Breaches"), and Infineon
-* shall have no liability arising out of any Security Breaches. Unless otherwise
-* explicitly approved by Infineon, the Software may not be used in any application
-* where a failure of the Product or any consequences of the use thereof can
-* reasonably be expected to result in personal injury.
+ * (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG. All rights reserved.
+ * This software, associated documentation and materials ("Software") is
+ * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+ * and is protected by and subject to worldwide patent protection, worldwide
+ * copyright laws, and international treaty provisions. Therefore, you may use
+ * this Software only as provided in the license agreement accompanying the
+ * software package from which you obtained this Software. If no license
+ * agreement applies, then any use, reproduction, modification, translation, or
+ * compilation of this Software is prohibited without the express written
+ * permission of Infineon.
+ *
+ * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+ * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+ * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+ * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+ * Infineon reserves the right to make changes to the Software without notice.
+ * You are responsible for properly designing, programming, and testing the
+ * functionality and safety of your intended application of the Software, as
+ * well as complying with any legal requirements related to its use. Infineon
+ * does not guarantee that the Software will be free from intrusion, data theft
+ * or loss, or other breaches ("Security Breaches"), and Infineon shall have
+ * no liability arising out of any Security Breaches. Unless otherwise
+ * explicitly approved by Infineon, the Software may not be used in any
+ * application where a failure of the Product or any consequences of the use
+ * thereof can reasonably be expected to result in personal injury.
 ******************************************************************************/
 
 /*********************
@@ -875,11 +879,6 @@ vg_lite_blend_t lv_vg_lite_blend_mode(lv_blend_mode_t blend_mode)
 
 bool lv_vg_lite_buffer_check(const vg_lite_buffer_t * buffer, bool is_src)
 {
-    uint32_t mul;
-    uint32_t div;
-    uint32_t align;
-    int32_t stride;
-
     if(!buffer) {
         LV_LOG_ERROR("buffer is NULL");
         return false;
@@ -923,14 +922,6 @@ bool lv_vg_lite_buffer_check(const vg_lite_buffer_t * buffer, bool is_src)
 
     if(!LV_VG_LITE_IS_ALIGNED(buffer->memory, LV_DRAW_BUF_ALIGN)) {
         LV_LOG_ERROR("buffer address(%p) is not aligned to %d", buffer->memory, LV_DRAW_BUF_ALIGN);
-        return false;
-    }
-
-    lv_vg_lite_buffer_format_bytes(buffer->format, &mul, &div, &align);
-    stride = LV_VG_LITE_ALIGN((buffer->width * mul / div), align);
-
-    if(buffer->stride != stride) {
-        LV_LOG_ERROR("buffer stride(%d) != %d", (int)buffer->stride, (int)stride);
         return false;
     }
 

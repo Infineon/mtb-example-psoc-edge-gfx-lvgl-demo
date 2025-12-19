@@ -7,8 +7,8 @@
 #
 ################################################################################
 # \copyright
-# (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG.
-# SPDX-License-Identifier: Apache-2.0
+# (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+# Technologies AG.  SPDX-License-Identifier: Apache-2.0
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -111,7 +111,6 @@ CY_IGNORE += $(SEARCH_lvgl)/draw/nxp $(SEARCH_lvgl)/draw/renesas $(SEARCH_lvgl)/
 CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_draw_vg_lite.c $(SEARCH_lvgl)/src/draw/vg_lite/lv_vg_lite_utils.c
 CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_draw_vg_lite_img.c $(SEARCH_lvgl)/src/draw/sw/blend/helium
 CY_IGNORE += $(SEARCH_lvgl)/src/draw/sw/blend/neon $(SEARCH_lvgl)/src/core/lv_refr.c
-CY_IGNORE += $(SEARCH_lvgl)/demos/music/lv_demo_music_list.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_1.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_2.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_3.c
@@ -141,6 +140,10 @@ CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_3_large.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/benchmark/assets/img_benchmark_avatar.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/benchmark/assets/img_benchmark_cogwheel_argb.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/benchmark/assets/img_benchmark_cogwheel_rgb.c
+
+CY_IGNORE += $(SEARCH_lvgl)/demos/widgets/assets/img_clothes.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/widgets/assets/img_demo_widgets_avatar.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/widgets/assets/img_lvgl_logo.c
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT+=

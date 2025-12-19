@@ -7,29 +7,33 @@
 * Related Document : See README.md
 *
 ********************************************************************************
-* (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
-* This software, associated documentation and materials ("Software") is owned by
-* Infineon Technologies AG or one of its affiliates ("Infineon") and is protected
-* by and subject to worldwide patent protection, worldwide copyright laws, and
-* international treaty provisions. Therefore, you may use this Software only as
-* provided in the license agreement accompanying the software package from which
-* you obtained this Software. If no license agreement applies, then any use,
-* reproduction, modification, translation, or compilation of this Software is
-* prohibited without the express written permission of Infineon.
-* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
-* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING,
-* BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF THIRD-PARTY RIGHTS AND
-* IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A SPECIFIC USE/PURPOSE OR
-* MERCHANTABILITY. Infineon reserves the right to make changes to the Software
-* without notice. You are responsible for properly designing, programming, and
-* testing the functionality and safety of your intended application of the
-* Software, as well as complying with any legal requirements related to its
-* use. Infineon does not guarantee that the Software will be free from intrusion,
-* data theft or loss, or other breaches ("Security Breaches"), and Infineon
-* shall have no liability arising out of any Security Breaches. Unless otherwise
-* explicitly approved by Infineon, the Software may not be used in any application
-* where a failure of the Product or any consequences of the use thereof can
-* reasonably be expected to result in personal injury.
+ * (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG. All rights reserved.
+ * This software, associated documentation and materials ("Software") is
+ * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+ * and is protected by and subject to worldwide patent protection, worldwide
+ * copyright laws, and international treaty provisions. Therefore, you may use
+ * this Software only as provided in the license agreement accompanying the
+ * software package from which you obtained this Software. If no license
+ * agreement applies, then any use, reproduction, modification, translation, or
+ * compilation of this Software is prohibited without the express written
+ * permission of Infineon.
+ *
+ * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+ * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+ * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+ * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+ * Infineon reserves the right to make changes to the Software without notice.
+ * You are responsible for properly designing, programming, and testing the
+ * functionality and safety of your intended application of the Software, as
+ * well as complying with any legal requirements related to its use. Infineon
+ * does not guarantee that the Software will be free from intrusion, data theft
+ * or loss, or other breaches ("Security Breaches"), and Infineon shall have
+ * no liability arising out of any Security Breaches. Unless otherwise
+ * explicitly approved by Infineon, the Software may not be used in any
+ * application where a failure of the Product or any consequences of the use
+ * thereof can reasonably be expected to result in personal injury.
 *******************************************************************************/
 
 #ifndef LV_CONF_H
@@ -196,40 +200,6 @@
 
     /* Enable drawing complex gradients in software: linear at an angle, radial or conical */
     #define LV_USE_DRAW_SW_COMPLEX_GRADIENTS    0
-#endif
-
-/* Use NXP's VG-Lite GPU on iMX RTxxx platforms. */
-#define LV_USE_DRAW_VGLITE 0
-
-#if LV_USE_DRAW_VGLITE
-    /* Enable blit quality degradation workaround recommended for screen's dimension > 352 pixels. */
-    #define LV_USE_VGLITE_BLIT_SPLIT 0
-
-    #if LV_USE_OS
-        /* Use additional draw thread for VG-Lite processing.*/
-        #define LV_USE_VGLITE_DRAW_THREAD 1
-
-        #if LV_USE_VGLITE_DRAW_THREAD
-            /* Enable VGLite draw async. Queue multiple tasks and flash them once to the GPU. */
-            #define LV_USE_VGLITE_DRAW_ASYNC 1
-        #endif
-    #endif
-
-    /* Enable VGLite asserts. */
-    #define LV_USE_VGLITE_ASSERT 0
-#endif
-
-/* Use NXP's PXP on iMX RTxxx platforms. */
-#define LV_USE_DRAW_PXP 0
-
-#if LV_USE_DRAW_PXP
-    #if LV_USE_OS
-        /* Use additional draw thread for PXP processing.*/
-        #define LV_USE_PXP_DRAW_THREAD 1
-    #endif
-
-    /* Enable PXP asserts. */
-    #define LV_USE_PXP_ASSERT 0
 #endif
 
 /* Use Renesas Dave2D on RA  platforms. */
@@ -903,7 +873,7 @@
     #endif
 
     /*Header to include for the profiler*/
-    #define LV_PROFILER_INCLUDE "lvgl/src/misc/lv_profiler_builtin.h"
+    #define LV_PROFILER_INCLUDE "lv_profiler_builtin.h"
 
     /*Profiler start point function*/
     #define LV_PROFILER_BEGIN    LV_PROFILER_BUILTIN_BEGIN

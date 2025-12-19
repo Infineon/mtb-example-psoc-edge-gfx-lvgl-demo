@@ -6,31 +6,35 @@
 *
 * Related Document : See README.md
 *
-*******************************************************************************
-* (c) 2025-2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
-* This software, associated documentation and materials ("Software") is owned by
-* Infineon Technologies AG or one of its affiliates ("Infineon") and is protected
-* by and subject to worldwide patent protection, worldwide copyright laws, and
-* international treaty provisions. Therefore, you may use this Software only as
-* provided in the license agreement accompanying the software package from which
-* you obtained this Software. If no license agreement applies, then any use,
-* reproduction, modification, translation, or compilation of this Software is
-* prohibited without the express written permission of Infineon.
-* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
-* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING,
-* BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF THIRD-PARTY RIGHTS AND
-* IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A SPECIFIC USE/PURPOSE OR
-* MERCHANTABILITY. Infineon reserves the right to make changes to the Software
-* without notice. You are responsible for properly designing, programming, and
-* testing the functionality and safety of your intended application of the
-* Software, as well as complying with any legal requirements related to its
-* use. Infineon does not guarantee that the Software will be free from intrusion,
-* data theft or loss, or other breaches ("Security Breaches"), and Infineon
-* shall have no liability arising out of any Security Breaches. Unless otherwise
-* explicitly approved by Infineon, the Software may not be used in any application
-* where a failure of the Product or any consequences of the use thereof can
-* reasonably be expected to result in personal injury.
-******************************************************************************/
+********************************************************************************
+ * (c) 2025, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG. All rights reserved.
+ * This software, associated documentation and materials ("Software") is
+ * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+ * and is protected by and subject to worldwide patent protection, worldwide
+ * copyright laws, and international treaty provisions. Therefore, you may use
+ * this Software only as provided in the license agreement accompanying the
+ * software package from which you obtained this Software. If no license
+ * agreement applies, then any use, reproduction, modification, translation, or
+ * compilation of this Software is prohibited without the express written
+ * permission of Infineon.
+ *
+ * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+ * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+ * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+ * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+ * Infineon reserves the right to make changes to the Software without notice.
+ * You are responsible for properly designing, programming, and testing the
+ * functionality and safety of your intended application of the Software, as
+ * well as complying with any legal requirements related to its use. Infineon
+ * does not guarantee that the Software will be free from intrusion, data theft
+ * or loss, or other breaches ("Security Breaches"), and Infineon shall have
+ * no liability arising out of any Security Breaches. Unless otherwise
+ * explicitly approved by Infineon, the Software may not be used in any
+ * application where a failure of the Product or any consequences of the use
+ * thereof can reasonably be expected to result in personal injury.
+*******************************************************************************/
 
 /*******************************************************************************
 * Header Files
@@ -42,13 +46,20 @@
 #include "cy_graphics.h"
 
 
+#if LV_COLOR_DEPTH == 16
+    #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)) 
+#elif LV_COLOR_DEPTH == 32
+    #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_ARGB8888))
+#endif
+
+
 /*******************************************************************************
 * Global Variables
 *******************************************************************************/
 CY_SECTION(".cy_gpu_buf") LV_ATTRIBUTE_MEM_ALIGN uint8_t disp_buf1[MY_DISP_HOR_RES *
-                                               MY_DISP_VER_RES * 2];
+                                               MY_DISP_VER_RES * BYTE_PER_PIXEL];
 CY_SECTION(".cy_gpu_buf") LV_ATTRIBUTE_MEM_ALIGN uint8_t disp_buf2[MY_DISP_HOR_RES *
-                                               MY_DISP_VER_RES * 2];
+                                               MY_DISP_VER_RES * BYTE_PER_PIXEL]; 
 /* Frame buffers used by GFXSS to render UI */
 void *frame_buffer1 = &disp_buf1;
 void *frame_buffer2 = &disp_buf2;
@@ -73,8 +84,9 @@ cy_stc_gfx_context_t gfx_context;
 *  void
 *
 *******************************************************************************/
-static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv, const lv_area_t *area,
-        uint8_t *color_p)
+static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv,
+                                             const lv_area_t *area,
+                                             uint8_t *color_p)
 {
     CY_UNUSED_PARAMETER(area);
 
@@ -117,7 +129,6 @@ static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv, const lv_ar
 *      This way LVGL will always provide the whole rendered screen in `flush_cb`
 *      and you only need to change the frame buffer's address.
 *
-*
 * Parameters:
 *  void
 *
@@ -138,6 +149,11 @@ void lv_port_disp_init(void)
 
     lv_display_set_buffers(disp, disp_buf1, disp_buf2, sizeof(disp_buf1),
                            LV_DISPLAY_RENDER_MODE_FULL);
+
+    /* Set the display resolution to match the physical resolution so that
+     * LVGL renders the UI within the limits of the actual display resolution.
+     */
+    lv_display_set_resolution(disp, ACTUAL_DISP_HOR_RES, ACTUAL_DISP_VER_RES);
 
     Cy_GFXSS_Clear_DC_Interrupt((GFXSS_Type*) GFXSS, &gfx_context);
 }

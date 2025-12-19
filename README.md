@@ -16,7 +16,7 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
    CONFIG_DISPLAY=W4P3INCH_DISP
    ```
 
-  To build the application for the 7-inch display, set the following macro in *common.mk*:
+   To build the application for the 7-inch display, set the following macro in *common.mk*:
 
    ```
    CONFIG_DISPLAY=WS7P0DSI_RPI_DISP
@@ -32,7 +32,7 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-gfx-lvgl-demo)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJtYWp1bWRhciIsIkRvYyB2ZXJzaW9uIjoiMi4xLjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi4yLjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
@@ -167,6 +167,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
       ```
       CONFIG_DISPLAY = WS7P0DSI_RPI_DISP
       ```
+
       OR
 
       To use the 10.1 inch WF101JTYAHMNB0 display:
@@ -241,6 +242,7 @@ Document title: *CE239259* - *PSOC&trade; Edge MCU: Graphics LVGL demo*
  1.x.0   | New code example <br> Early access release
  2.0.0   | GitHub release
  2.1.0   | Added KIT_PSE84_AI BSP support
+ 2.2.0   | Patched alpha-premultiplied images assets for widgets demo <br> Provided fix to use target display's actual resolution
 <br>
 
 
