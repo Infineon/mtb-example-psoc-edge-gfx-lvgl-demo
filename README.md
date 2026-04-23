@@ -1,6 +1,6 @@
 # PSOC&trade; Edge MCU: Graphics LVGL demo
 
-This code example demonstrates how to render a 2D graphics demo using the Light and Versatile Graphics (LVGL) on the PSOC&trade; Edge MCU with the following supported displays.
+This code example demonstrates how to render a 2D graphics demo using the Light and Versatile Graphics Library (LVGL) on the PSOC&trade; Edge MCU with the following supported displays.
 
 - Waveshare 4.3-inch Raspberry Pi DSI 800x480 pixel display
 - Waveshare 7-inch Raspberry Pi DSI LCD C 1024x600 pixel display
@@ -32,9 +32,9 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-gfx-lvgl-demo)
 
-[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi4zLjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi40LjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
 
-See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
+See [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
 
 ## Requirements
@@ -64,28 +64,25 @@ See the [Design and implementation](docs/design_and_implementation.md) for the f
 
 This example uses the board's default configuration. See the kit user guide to ensure that the board is configured correctly.
 
-Ensure the following jumper and pin configuration on board.
+Ensure the following jumper and pin configurations on board:
 - BOOT SW must be in the HIGH/ON position
-- J20 and J21 must be in the tristate/not connected (NC) position
+- J20 and J21 must be in the tristate/not connected (NC) position for the PSOC&trade; Edge E84 Evaluation Kit
 
 > **Note:** This hardware setup is not required for KIT_PSE84_AI.
 
 ### Supported display and electrical connection
-
 1. **Waveshare 4.3 inch Raspberry Pi DSI 800*480 pixel display:** This display is supported by default <br>
 
    Connect the FPC 15-pin cable between the display connector and the PSOC&trade; Edge E84 kit's RPi MIPI DSI connector as shown in **Figure 1** <br>
 
    **Table 1. Cable connection between display connector and kit**
 
-   Kit's name                                      | DSI connector
+   Kit name                                      | DSI connector
    ----------------------------------------------- | --------------
    PSOC&trade; Edge E84 Evaluation Kit             | J39
    PSOC&trade; Edge E84 AI Kit                     | J10
 
-   > **Note:** The PSOC&trade; Edge E84 AI kit supports Waveshare 4.3 inch Raspberry Pi DSI 800*480 pixel display.
-
-   **Figure 1.  Display connection with PSOC&trade; Edge E84 evaluation kit**
+   **Figure 1.  Display connection with PSOC&trade; Edge E84 Evaluation Kit**
 
    ![](images/display-kit-connection.png)
 
@@ -97,26 +94,28 @@ Ensure the following jumper and pin configuration on board.
 
    ![](images/ws7p0dsi_panel_i2c_connection.png)
 
-   Interface the display with the PSOC&trade; Edge E84 Evaluation Kit using the connections outlined in **Table 2** <br>
+   Interface the display with the PSOC&trade; Edge E84 kit's using the connections outlined in **Table 2** <br>
 
-   **Table 2: PSOC&trade; Edge E84 Evaluation Kit connections**
+   > **Note:** For the PSOC&trade; Edge E84 AI Kit, populate the header at J16
 
-   Display's Connector | PSOC&trade; Edge E84 Evaluation Kit's connector
-   --------------------|----------------------------------------
-   DSI connector       | J39
-   GND (FAN)           | GND (J41)
-   5V  (FAN)           | 5V (J41)
-   SCL (FAN)           | I2C_SCL (J41)
-   SDA (FAN)           | I2C_SDA (J41)
+   **Table 2: PSOC&trade; Edge E84 kit's connections**
+
+   Display Connector | PSOC&trade; Edge E84 Evaluation Kit connector | PSOC&trade; Edge E84 AI Kit connector
+   ------------------|-----------------------------------------------|----------------------------
+   DSI connector     | J39                                           | J10
+   GND (FAN)         | GND (J41.1)                                   | GND (J16.3)
+   5V  (FAN)         | 5V (J41.3)                                    | 5V (J16.1)
+   SCL (FAN)         | I2C_SCL (J41.2)                               | I2C_SCL_3V3 (J16.2)
+   SDA (FAN)         | I2C_SDA (J41.4)                               | I2C_SDA_3V3 (J16.4)
 
 <br>
 
-3. **10.1 inch 1024*600 pixel TFT LCD (WF101JTYAHMNB0):** This setup requires rework on the PSOC&trade; Edge E84 evaluation kit, and the rework instructions are as follows:
+3. **10.1 inch 1024*600 pixel TFT LCD (WF101JTYAHMNB0):** This setup requires rework on the PSOC&trade; Edge E84 Evaluation Kit, and the rework instructions are as follows:
 
    - **Remove:** R22, R23, R24, R25, R26, R27
    - **Populate:** R28, R29, R30, R31, R32, R33
 
-   **Figure 3. Rework on PSOC™ Edge E84 baseboard**
+   **Figure 3. Rework on PSOC&trade; Edge E84 baseboard**
 
    ![](images/pse84_kit_mipi_disp_rework.png)
 
@@ -124,12 +123,13 @@ Ensure the following jumper and pin configuration on board.
 
    **Table 3: PSOC&trade; Edge E84 Evaluation Kit connections**
 
-   Display's Connector | PSOC&trade; Edge E84 Evaluation Kit's connector
+   Display Connector | PSOC&trade; Edge E84 Evaluation Kit connector
    --------------------|----------------------------------------
    DSI connector       | J38
    Touch connector     | J37
 
-<br>
+> **Note:** The PSOC&trade; Edge E84 AI Kit does not support this 10.1 inch 1024*600 pixel TFT LCD (WF101JTYAHMNB0) display.
+
 
 ## Software setup
 
@@ -150,15 +150,15 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
 3. Open a terminal program and select the KitProg3 COM port. Set the serial port parameters to 8N1 and 115200 baud
 
-4. In the common makefile - _<application\>/common.mk_, add one of the following set of values in the **variable** `CONFIG_DISPLAY` to enable display and it's corresponding touch driver compilation for the selected display panel. The same information is mentioned in comments in the common makefile
+4. In the common makefile - _<application\>/common.mk_, add one of the following set of values in the **variable** `CONFIG_DISPLAY` to enable display and its corresponding touch driver compilation for the selected display panel. The same information is mentioned in comments in the common makefile
 
-   - **Waveshare 4.3-inch Raspberry-Pi DSI LCD and it's touch panel (FT5406):** `W4P3INCH_DISP` <br> This is enabled by default
+   - **Waveshare 4.3-inch Raspberry-Pi DSI LCD and its touch panel (FT5406):** `W4P3INCH_DISP` <br> This is enabled by default
 
-   - **Waveshare 7 inch Raspberry Pi DSI LCD (C) Display (DISP_WS7P0DSI_RPI) and it's touch panel (GT911):** `WS7P0DSI_RPI_DISP`
+   - **Waveshare 7 inch Raspberry Pi DSI LCD (C) Display (DISP_WS7P0DSI_RPI) and its touch panel (GT911):** `WS7P0DSI_RPI_DISP`
 
-   - **10.1 inch 1024*600 TFT LCD (WF101JTYAHMNB0) and it's touch panel (ILI2511):** `WF101JTYAHMNB0_DISP`
+   - **10.1 inch 1024*600 TFT LCD (WF101JTYAHMNB0) and its touch panel (ILI2511):** `WF101JTYAHMNB0_DISP`
 
-      > **Note:** From the above set, at a time only one display with its touch driver will be enabled in the _common makefile_.
+      > **Note:** From the above set, at a time only one display with its touch driver will be enabled in the _common makefile_
 
       **Example**:
 
@@ -184,7 +184,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    ![](images/terminal-output.png)
 
-7. Observe that the LCD displays a music player demo application. You can use the touch screen to perform various actions such as playing or pausing a track, changing to the next or previous track, and viewing the playlist
+7. Observe that the LCD displays a music player demo application. You can use the touch screen to perform various actions, such as playing or pausing a track, switching to the next or previous track, and viewing the playlist
 
    **Figure 5. LVGL demo**
 
@@ -206,11 +206,11 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
       #define LV_USE_PERF_MONITOR_POS LV_ALIGN_BOTTOM_LEFT
       ```
 
-   **Figure 7. LVGL music player with cpu usage**
+   **Figure 7. LVGL music player with CPU usage**
 
    ![](images/cpu_usage_display.png)
 
-9. For testing the code example with the other supported display, repeat the above steps. At **Step 4**, enable the display of your choice and then follow the rest of the steps
+9. For testing the code example with other supported display, repeat the above steps. At **Step 4**, enable the display of your choice and then follow the remaining steps
 
 
 
@@ -244,6 +244,7 @@ Document title: *CE239259* - *PSOC&trade; Edge MCU: Graphics LVGL demo*
  2.1.0   | Added KIT_PSE84_AI BSP support
  2.2.0   | Patched alpha-premultiplied images assets for widgets demo <br> Provided fix to use target display's actual resolution
  2.3.0   | Updated design files to fix ModusToolbox&trade; v3.7 build warnings
+ 2.4.0   | Improved widget demo performance when benchmarking is enabled <br> Fixed a GPU hanging issue in the widget demo when benchmark is enabled
 <br>
 
 
@@ -255,8 +256,7 @@ PSOC&trade;, formerly known as PSoC&trade;, is a trademark of Infineon Technolog
 
 ---------------------------------------------------------
 
-© Cypress Semiconductor Corporation, 2023-2025. This document is the property of Cypress Semiconductor Corporation, an Infineon Technologies company, and its affiliates ("Cypress").  This document, including any software or firmware included or referenced in this document ("Software"), is owned by Cypress under the intellectual property laws and treaties of the United States and other countries worldwide.  Cypress reserves all rights under such laws and treaties and does not, except as specifically stated in this paragraph, grant any license under its patents, copyrights, trademarks, or other intellectual property rights.  If the Software is not accompanied by a license agreement and you do not otherwise have a written agreement with Cypress governing the use of the Software, then Cypress hereby grants you a personal, non-exclusive, nontransferable license (without the right to sublicense) (1) under its copyright rights in the Software (a) for Software provided in source code form, to modify and reproduce the Software solely for use with Cypress hardware products, only internally within your organization, and (b) to distribute the Software in binary code form externally to end users (either directly or indirectly through resellers and distributors), solely for use on Cypress hardware product units, and (2) under those claims of Cypress's patents that are infringed by the Software (as provided by Cypress, unmodified) to make, use, distribute, and import the Software solely for use with Cypress hardware products.  Any other use, reproduction, modification, translation, or compilation of the Software is prohibited.
+(c) 2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
+This software, associated documentation and materials ("Software") is owned by Infineon Technologies AG or one of its affiliates ("Infineon") and is protected by and subject to worldwide patent protection, worldwide copyright laws, and international treaty provisions. Therefore, you may use this Software only as provided in the license agreement accompanying the software package from which you obtained this Software. If no license agreement applies, then any use, reproduction, modification, translation, or compilation of this Software is prohibited without the express written permission of Infineon.
 <br>
-TO THE EXTENT PERMITTED BY APPLICABLE LAW, CYPRESS MAKES NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, WITH REGARD TO THIS DOCUMENT OR ANY SOFTWARE OR ACCOMPANYING HARDWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  No computing device can be absolutely secure.  Therefore, despite security measures implemented in Cypress hardware or software products, Cypress shall have no liability arising out of any security breach, such as unauthorized access to or use of a Cypress product. CYPRESS DOES NOT REPRESENT, WARRANT, OR GUARANTEE THAT CYPRESS PRODUCTS, OR SYSTEMS CREATED USING CYPRESS PRODUCTS, WILL BE FREE FROM CORRUPTION, ATTACK, VIRUSES, INTERFERENCE, HACKING, DATA LOSS OR THEFT, OR OTHER SECURITY INTRUSION (collectively, "Security Breach").  Cypress disclaims any liability relating to any Security Breach, and you shall and hereby do release Cypress from any claim, damage, or other liability arising from any Security Breach.  In addition, the products described in these materials may contain design defects or errors known as errata which may cause the product to deviate from published specifications. To the extent permitted by applicable law, Cypress reserves the right to make changes to this document without further notice. Cypress does not assume any liability arising out of the application or use of any product or circuit described in this document. Any information provided in this document, including any sample design information or programming code, is provided only for reference purposes.  It is the responsibility of the user of this document to properly design, program, and test the functionality and safety of any application made of this information and any resulting product.  "High-Risk Device" means any device or system whose failure could cause personal injury, death, or property damage.  Examples of High-Risk Devices are weapons, nuclear installations, surgical implants, and other medical devices.  "Critical Component" means any component of a High-Risk Device whose failure to perform can be reasonably expected to cause, directly or indirectly, the failure of the High-Risk Device, or to affect its safety or effectiveness.  Cypress is not liable, in whole or in part, and you shall and hereby do release Cypress from any claim, damage, or other liability arising from any use of a Cypress product as a Critical Component in a High-Risk Device. You shall indemnify and hold Cypress, including its affiliates, and its directors, officers, employees, agents, distributors, and assigns harmless from and against all claims, costs, damages, and expenses, arising out of any claim, including claims for product liability, personal injury or death, or property damage arising from any use of a Cypress product as a Critical Component in a High-Risk Device. Cypress products are not intended or authorized for use as a Critical Component in any High-Risk Device except to the limited extent that (i) Cypress's published data sheet for the product explicitly states Cypress has qualified the product for use in a specific High-Risk Device, or (ii) Cypress has given you advance written authorization to use the product as a Critical Component in the specific High-Risk Device and you have signed a separate indemnification agreement.
-<br>
-Cypress, the Cypress logo, and combinations thereof, ModusToolbox, PSoC, CAPSENSE, EZ-USB, F-RAM, and TRAVEO are trademarks or registered trademarks of Cypress or a subsidiary of Cypress in the United States or in other countries. For a more complete list of Cypress trademarks, visit www.infineon.com. Other names and brands may be claimed as property of their respective owners.
+Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A SPECIFIC USE/PURPOSE OR MERCHANTABILITY. Infineon reserves the right to make changes to the Software without notice. You are responsible for properly designing, programming, and testing the functionality and safety of your intended application of the Software, as well as complying with any legal requirements related to its use. Infineon does not guarantee that the Software will be free from intrusion, data theft or loss, or other breaches (“Security Breaches”), and Infineon shall have no liability arising out of any Security Breaches. Unless otherwise explicitly approved by Infineon, the Software may not be used in any application where a failure of the Product or any consequences of the use thereof can reasonably be expected to result in personal injury.

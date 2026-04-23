@@ -51,6 +51,16 @@ TOOLCHAIN=GCC_ARM
 # launch configurations for your IDE.
 CONFIG=Debug
 
+# Set to 1 to run the benchmark LVGL widget demo.
+# When enabled, the build configuration is automatically set to Release
+# for accurate performance measurements.
+DEMO_BENCHMARK?=0
+
+ifeq ($(DEMO_BENCHMARK), 1)
+CONFIG=Release
+DEFINES+=LV_USE_DEMO_BENCHMARK=$(DEMO_BENCHMARK)
+endif
+
 ############################# Display module ###################################
 # Option to choose the display module to realize the graphics application.
 # Select one of them as per the required use-case.
@@ -66,6 +76,13 @@ CONFIG=Debug
 #   or
 #   CONFIG_DISPLAY = W4P3INCH_DISP
 CONFIG_DISPLAY = W4P3INCH_DISP
+
+# Validate display selection for KIT_PSE84_AI target.
+ifneq ($(filter APP_KIT_PSE84_AI KIT_PSE84_AI, $(TARGET)),)
+ifeq ($(CONFIG_DISPLAY), WF101JTYAHMNB0_DISP)
+$(error WF101JTYAHMNB0_DISP is not supported for $(TARGET). Supported displays are: WS7P0DSI_RPI_DISP, W4P3INCH_DISP)
+endif
+endif
 
 ################################################################################
 # Advanced Configuration

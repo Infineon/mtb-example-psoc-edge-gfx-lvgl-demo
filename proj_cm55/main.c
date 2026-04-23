@@ -7,33 +7,33 @@
 * Related Document : See README.md
 *
 ********************************************************************************
- * (c) 2025-2026, Infineon Technologies AG, or an affiliate of Infineon
- * Technologies AG. All rights reserved.
- * This software, associated documentation and materials ("Software") is
- * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
- * and is protected by and subject to worldwide patent protection, worldwide
- * copyright laws, and international treaty provisions. Therefore, you may use
- * this Software only as provided in the license agreement accompanying the
- * software package from which you obtained this Software. If no license
- * agreement applies, then any use, reproduction, modification, translation, or
- * compilation of this Software is prohibited without the express written
- * permission of Infineon.
- *
- * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
- * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
- * THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
- * SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
- * Infineon reserves the right to make changes to the Software without notice.
- * You are responsible for properly designing, programming, and testing the
- * functionality and safety of your intended application of the Software, as
- * well as complying with any legal requirements related to its use. Infineon
- * does not guarantee that the Software will be free from intrusion, data theft
- * or loss, or other breaches ("Security Breaches"), and Infineon shall have
- * no liability arising out of any Security Breaches. Unless otherwise
- * explicitly approved by Infineon, the Software may not be used in any
- * application where a failure of the Product or any consequences of the use
- * thereof can reasonably be expected to result in personal injury.
+* (c) 2025-2026, Infineon Technologies AG, or an affiliate of Infineon
+* Technologies AG. All rights reserved.
+* This software, associated documentation and materials ("Software") is
+* owned by Infineon Technologies AG or one of its affiliates ("Infineon")
+* and is protected by and subject to worldwide patent protection, worldwide
+* copyright laws, and international treaty provisions. Therefore, you may use
+* this Software only as provided in the license agreement accompanying the
+* software package from which you obtained this Software. If no license
+* agreement applies, then any use, reproduction, modification, translation, or
+* compilation of this Software is prohibited without the express written
+* permission of Infineon.
+*
+* Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
+* IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+* INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
+* THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A
+* SPECIFIC USE/PURPOSE OR MERCHANTABILITY.
+* Infineon reserves the right to make changes to the Software without notice.
+* You are responsible for properly designing, programming, and testing the
+* functionality and safety of your intended application of the Software, as
+* well as complying with any legal requirements related to its use. Infineon
+* does not guarantee that the Software will be free from intrusion, data theft
+* or loss, or other breaches ("Security Breaches"), and Infineon shall have
+* no liability arising out of any Security Breaches. Unless otherwise
+* explicitly approved by Infineon, the Software may not be used in any
+* application where a failure of the Product or any consequences of the use
+* thereof can reasonably be expected to result in personal injury.
 *******************************************************************************/
 
 /*******************************************************************************
@@ -100,6 +100,10 @@
 
 /* Define the LPTimer interrupt priority number. '1' implies highest priority.*/
 #define APP_LPTIMER_INTERRUPT_PRIORITY      (1U)
+
+#if LV_USE_DEMO_BENCHMARK
+#define BENCHMARK_DONE_CHECK_PERIOD_MS      (500U)
+#endif
 
 #if ( configGENERATE_RUN_TIME_STATS == 1 )
 #define TCPWM_TIMER_INT_PRIORITY            (1U)
@@ -413,6 +417,46 @@ static void disp_touch_i2c_controller_interrupt(void)
 }
 
 
+#if LV_USE_DEMO_BENCHMARK
+/*******************************************************************************
+* Function Name: check_benchmark_done_cb
+********************************************************************************
+* Summary:
+*  This timer callback polls for the completion of the LVGL benchmark.
+*
+*  Once all test cases finish, the benchmark demo replaces the screen content
+*  with a results table. When the table is detected as the first child of the
+*  active screen, the callback re-enables touch input (which was disabled
+*  during the benchmark to reduce CPU load) and deletes the one-shot timer.
+*
+*  Touch input is intentionally disabled while the benchmark is running
+*  because the hardware touch controller operates in polling mode, which
+*  would add unnecessary CPU overhead.
+*
+* Parameters:
+*  lv_timer_t *t: Pointer to the LVGL timer that triggered this callback
+*
+* Return:
+*  void
+*
+*******************************************************************************/
+static void check_benchmark_done_cb(lv_timer_t *t)
+{
+    lv_obj_t *scr = lv_screen_active();
+
+    /* The benchmark summary screen places a table as the first child of the
+     * active screen once all test cases have completed. */
+    if ((lv_obj_get_child_count(scr) > 0) &&
+        (lv_obj_check_type(lv_obj_get_child(scr, 0), &lv_table_class)))
+    {
+        /* Benchmark is done - re-enable touch so the user can scroll results */
+        lv_port_indev_init();
+        lv_timer_delete(t);
+    }
+}
+#endif
+
+
 /*******************************************************************************
 * Function Name: cm55_gfx_task
 ********************************************************************************
@@ -606,18 +650,31 @@ static void cm55_gfx_task(void *arg)
         /* Initialize the memory and data structures needed for VGLite draw/blit
          * functions
          */
-        vglite_status = vg_lite_init((MY_DISP_HOR_RES) / 4,
-                             (MY_DISP_VER_RES) / 4);
+        vglite_status = vg_lite_init((MY_DISP_HOR_RES),
+                             (MY_DISP_VER_RES));
 
         if (VG_LITE_SUCCESS == vglite_status)
         {
             /* Initialize LVGL library */
             lv_init();
             lv_port_disp_init();
+
+#if LV_USE_DEMO_BENCHMARK
+            /* Run the Benchmark demo */
+            lv_demo_benchmark();
+
+            /* Poll for the benchmark summary table
+             * Once detected, touch input is re-enabled and
+             * this timer is deleted. */
+            lv_timer_create(check_benchmark_done_cb, BENCHMARK_DONE_CHECK_PERIOD_MS, NULL);
+#else
+            /* Initialize touch input. Skipped during benchmark to avoid the
+             * CPU overhead of polling-mode touch. */
             lv_port_indev_init();
 
             /* Run the Music demo */
             lv_demo_music();
+#endif
         }
         else
         {
