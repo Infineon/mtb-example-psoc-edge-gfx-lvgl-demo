@@ -63,6 +63,11 @@ extern "C" {
 #define MY_DISP_HOR_RES                              (832U)
 #define ACTUAL_DISP_VER_RES                          (480U)
 #define ACTUAL_DISP_HOR_RES                          (800U)
+#elif defined(MTB_DISPLAY_R4INCH_TFT)
+#define MY_DISP_VER_RES                              (480U)
+#define MY_DISP_HOR_RES                              (512U)
+#define ACTUAL_DISP_VER_RES                          (480U)
+#define ACTUAL_DISP_HOR_RES                          (480U)
 #else
 #define MY_DISP_VER_RES                              (600U)
 #define MY_DISP_HOR_RES                              (1024U)

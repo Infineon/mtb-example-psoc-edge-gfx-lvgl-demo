@@ -69,13 +69,21 @@ endif
 # WS7P0DSI_RPI_DISP     - Waveshare 7 inch Raspberry-Pi DSI LCD (C) 1024*600 pixel
 #
 # W4P3INCH_DISP	- Waveshare 4.3 inch Raspberry-Pi DSI LCD 800*480 pixel
+#
+# R4INCH_DISP - ST7701S 4-inch MIPI DSI 512x480 pixel display (RK040HF001)
+#
 # Ex:
 #   CONFIG_DISPLAY = WF101JTYAHMNB0_DISP
 #   or
 #   CONFIG_DISPLAY = WS7P0DSI_RPI_DISP
 #   or
 #   CONFIG_DISPLAY = W4P3INCH_DISP
+# Note: R4INCH_DISP is supported only for KIT_PSE84_HMI
+ifeq ($(filter APP_KIT_PSE84_HMI KIT_PSE84_HMI, $(TARGET)), $(TARGET))
+CONFIG_DISPLAY = R4INCH_DISP
+else
 CONFIG_DISPLAY = W4P3INCH_DISP
+endif
 
 # Validate display selection for KIT_PSE84_AI target.
 ifneq ($(filter APP_KIT_PSE84_AI KIT_PSE84_AI, $(TARGET)),)

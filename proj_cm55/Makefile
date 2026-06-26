@@ -63,6 +63,9 @@ CY_IGNORE += $(SEARCH_touch-ctp-gt911)
 # Ignore unused 4.3-inch display and touch driver files from compilation
 CY_IGNORE += $(SEARCH_display-dsi-waveshare-4-3-lcd)
 CY_IGNORE += $(SEARCH_touch-ctp-ft5406)
+# Ignore unused 4-inch display and touch driver files from compilation
+CY_IGNORE += $(SEARCH_display-tft-st7701s)
+CY_IGNORE += $(SEARCH_touch-ctp-ft5446)
 else ifeq ($(CONFIG_DISPLAY), WS7P0DSI_RPI_DISP)
 DEFINES += MTB_DISPLAY_WS7P0DSI_RPI MTB_CTP_GT911
 # Ignore unused 10.1-inch display and touch driver files from compilation
@@ -71,6 +74,9 @@ CY_IGNORE += $(SEARCH_touch-ctp-ili2511)
 # Ignore unused 4.3-inch display and touch driver files from compilation
 CY_IGNORE += $(SEARCH_display-dsi-waveshare-4-3-lcd)
 CY_IGNORE += $(SEARCH_touch-ctp-ft5406)
+# Ignore unused 4-inch display and touch driver files from compilation
+CY_IGNORE += $(SEARCH_display-tft-st7701s)
+CY_IGNORE += $(SEARCH_touch-ctp-ft5446)
 else ifeq ($(CONFIG_DISPLAY), W4P3INCH_DISP)
 DEFINES += MTB_DISPLAY_W4P3INCH_RPI MTB_CTP_FT5406
 # Ignore unused 10.1-inch display and touch driver files from compilation
@@ -79,6 +85,20 @@ CY_IGNORE += $(SEARCH_touch-ctp-ili2511)
 # Ignore unused 7-inch display and touch driver files from compilation
 CY_IGNORE += $(SEARCH_display-dsi-waveshare-7-0-lcd-c)
 CY_IGNORE += $(SEARCH_touch-ctp-gt911)
+# Ignore unused 4-inch display and touch driver files from compilation
+CY_IGNORE += $(SEARCH_display-tft-st7701s)
+CY_IGNORE += $(SEARCH_touch-ctp-ft5446)
+else ifeq ($(CONFIG_DISPLAY), R4INCH_DISP)
+DEFINES += MTB_DISPLAY_R4INCH_TFT MTB_CTP_FT5446
+# Ignore unused 10.1-inch display and touch driver files from compilation
+CY_IGNORE += $(SEARCH_display-tft-ek79007ad3)
+CY_IGNORE += $(SEARCH_touch-ctp-ili2511)
+# Ignore unused 7-inch display and touch driver files from compilation
+CY_IGNORE += $(SEARCH_display-dsi-waveshare-7-0-lcd-c)
+CY_IGNORE += $(SEARCH_touch-ctp-gt911)
+# Ignore unused 4.3-inch display and touch driver files from compilation
+CY_IGNORE += $(SEARCH_display-dsi-waveshare-4-3-lcd)
+CY_IGNORE += $(SEARCH_touch-ctp-ft5406)
 endif
 
 # Like COMPONENTS, but disable optional code that was enabled by default.

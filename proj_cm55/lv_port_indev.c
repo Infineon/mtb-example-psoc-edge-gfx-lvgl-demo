@@ -49,6 +49,8 @@
 #include "mtb_ctp_ili2511.h"
 #elif defined(MTB_CTP_FT5406)
 #include "mtb_ctp_ft5406.h"
+#elif defined(MTB_CTP_FT5446)
+#include "mtb_ctp_ft5446.h"
 #endif
 #include "cybsp.h"
 #include "display_i2c_config.h"
@@ -62,6 +64,11 @@
 #define CTP_RESET_PIN              (3U)
 #define CTP_IRQ_PORT               GPIO_PRT17
 #define CTP_IRQ_PIN                (2U)
+#elif defined(MTB_CTP_FT5446)
+#define CTP_RESET_PORT             GPIO_PRT16
+#define CTP_RESET_PIN              (7U)
+#define CTP_IRQ_PORT               GPIO_PRT11
+#define CTP_IRQ_PIN                (6U)
 #endif
 
 #define INDEV_READ_PERIOD_MS       100U
@@ -95,6 +102,19 @@ mtb_ctp_ft5406_config_t ctp_ft5406_cfg =
 };
 #endif /* MTB_CTP_FT5406 */
 
+#if defined(MTB_CTP_FT5446)
+mtb_ctp_ft5446_config_t ctp_ft5446_cfg =
+{
+  .scb_instance        = DISPLAY_I2C_CONTROLLER_HW,
+  .i2c_context         = &disp_touch_i2c_controller_context,
+  .rst_port            = CTP_RESET_PORT,
+  .rst_pin             = CTP_RESET_PIN,
+  .irq_port            = CTP_IRQ_PORT,
+  .irq_pin             = CTP_IRQ_PIN,
+  .irq_num             = ioss_interrupts_gpio_11_IRQn,
+  .touch_event         = false,
+};
+#endif /* MTB_CTP_FT5446 */
 
 /*******************************************************************************
 * Function Name: touchpad_init
@@ -121,6 +141,8 @@ static void touchpad_init(void)
     result = mtb_ctp_ili2511_init(&ctp_ili2511_cfg);
 #elif defined(MTB_CTP_FT5406)
     result = (cy_rslt_t)mtb_ctp_ft5406_init(&ctp_ft5406_cfg);
+#elif defined(MTB_CTP_FT5446)
+    result = mtb_ctp_ft5446_init(&ctp_ft5446_cfg);
 #endif
 
     if (CY_RSLT_SUCCESS != result)
@@ -192,14 +214,19 @@ LV_ATTRIBUTE_FAST_MEM void touchpad_read(lv_indev_t *indev_drv,
     {
         data->state = LV_INDEV_STATE_PR;
     }
-
+#elif defined(MTB_CTP_FT5446)
+    result = mtb_ctp_ft5446_get_single_touch(&touch_x, &touch_y);
+    if ((CY_RSLT_SUCCESS == result))
+    {
+        data->state = LV_INDEV_STATE_PR;
+    }
 #endif
 
 #if defined(MTB_CTP_FT5406)
     /* Set the last pressed coordinates */
     data->point.x = ACTUAL_DISP_HOR_RES - touch_x;
     data->point.y = ACTUAL_DISP_VER_RES - touch_y;
-#elif defined(MTB_CTP_ILI2511) || defined(MTB_CTP_GT911)
+#elif defined(MTB_CTP_ILI2511) || defined(MTB_CTP_GT911) || defined(MTB_CTP_FT5446)
     /* Set the last pressed coordinates */
     data->point.x = touch_x;
     data->point.y = touch_y;

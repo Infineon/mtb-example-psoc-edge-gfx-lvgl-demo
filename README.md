@@ -5,12 +5,14 @@ This code example demonstrates how to render a 2D graphics demo using the Light 
 - Waveshare 4.3-inch Raspberry Pi DSI 800x480 pixel display
 - Waveshare 7-inch Raspberry Pi DSI LCD C 1024x600 pixel display
 - 10.1 inch 1024x600 TFT display (WF101JTYAHMNB0)
+- ST7701S 4-inch MIPI DSI 512x480 pixel display (RK040HF001)
 
 The 2D graphics showcase a music player application, which is featured as one of the standard demos on the LVGL page. The LCD is connected through the MIPI Display Serial Interface (DSI), and the code is designed to operate in a FreeRTOS environment.
 
-This code example has a three project structure: CM33 secure, CM33 non-secure, and CM55 projects. All three projects are programmed to the external QSPI flash and executed in Execute in Place (XIP) mode. Extended boot launches the CM33 secure project from a fixed location in the external flash, which then configures the protection settings and launches the CM33 non-secure application. Additionally, CM33 non-secure application enables CM55 CPU and launches the CM55 application. The CM55 application implements the logic for this code example.
+This code example has a three project structure: CM33 secure, CM33 non-secure, and CM55 projects. All three projects are programmed to the external QSPI flash and executed in Execute-in-Place (XIP) mode. Extended boot launches the CM33 secure project from a fixed location in the external flash, which then configures the protection settings and launches the CM33 non-secure application. Additionally, CM33 non-secure application enables CM55 CPU and launches the CM55 application. The CM55 application implements the logic for this code example.
+> **Note:** On KIT_PSE84_HMI, all three projects are programmed to the external OSPI flash instead of QSPI.
 
-> **Note:** This application builds for the 4.3-inch display by default.
+> **Note:** This application builds for the 4.3-inch display by default for all BSPs except KIT_PSE84_HMI. For KIT_PSE84_HMI, the `CONFIG_DISPLAY` is set to `R4INCH_DISP` by default.
 
    ```
    CONFIG_DISPLAY=W4P3INCH_DISP
@@ -32,7 +34,7 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-gfx-lvgl-demo)
 
-[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi40LjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi41LjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
 
 See [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
@@ -58,6 +60,7 @@ See [Design and implementation](docs/design_and_implementation.md) for the funct
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC2`) – Default value of `TARGET`
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC4`)
 - [PSOC&trade; Edge E84 AI Kit](https://www.infineon.com/KIT_PSE84_AI) (`KIT_PSE84_AI`)
+- [PSOC&trade; Edge E84 HMI Kit](https://www.infineon.com/KIT_PSE84_HMI) (`KIT_PSE84_HMI`)
 
 
 ## Hardware setup
@@ -130,6 +133,13 @@ Ensure the following jumper and pin configurations on board:
 
 > **Note:** The PSOC&trade; Edge E84 AI Kit does not support this 10.1 inch 1024*600 pixel TFT LCD (WF101JTYAHMNB0) display.
 
+4. **ST7701S 4-inch MIPI DSI 512x480 pixel display (RK040HF001):** This display is equipped by default with PSOC&trade; Edge E84 HMI Kit
+
+   **Figure 4. 4-inch MIPI DSI 512x480 pixel display**
+
+   ![](images/hmi_kit_image.png)
+
+> **Note:** Due to the enclosed design of the PSOC&trade; Edge E84 HMI Kit, only the default ST7701S 4-inch MIPI DSI 512x480 pixel display (RK040HF001) is supported in this code example.
 
 ## Software setup
 
@@ -180,17 +190,17 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
 6. After programming, the application starts automatically. Confirm that "PSOC Edge MCU: Graphics LVGL Demo" is displayed on the UART terminal
 
-   **Figure 4. Terminal output on program startup**
+   **Figure 5. Terminal output on program startup**
 
    ![](images/terminal-output.png)
 
 7. Observe that the LCD displays a music player demo application. You can use the touch screen to perform various actions, such as playing or pausing a track, switching to the next or previous track, and viewing the playlist
 
-   **Figure 5. LVGL demo**
+   **Figure 6. LVGL demo**
 
    ![](images/lvgl-demo.png)
 
-   **Figure 6. LVGL music player**
+   **Figure 7. LVGL music player**
 
    ![](images/lvgl-music-player.gif)
 
@@ -206,7 +216,7 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
       #define LV_USE_PERF_MONITOR_POS LV_ALIGN_BOTTOM_LEFT
       ```
 
-   **Figure 7. LVGL music player with CPU usage**
+   **Figure 8. LVGL music player with CPU usage**
 
    ![](images/cpu_usage_display.png)
 
@@ -245,6 +255,7 @@ Document title: *CE239259* - *PSOC&trade; Edge MCU: Graphics LVGL demo*
  2.2.0   | Patched alpha-premultiplied images assets for widgets demo <br> Provided fix to use target display's actual resolution
  2.3.0   | Updated design files to fix ModusToolbox&trade; v3.7 build warnings
  2.4.0   | Improved widget demo performance when benchmarking is enabled <br> Fixed a GPU hanging issue in the widget demo when benchmark is enabled
+ 2.5.0   | Added support for KIT_PSE84_HMI
 <br>
 
 
@@ -256,7 +267,7 @@ PSOC&trade;, formerly known as PSoC&trade;, is a trademark of Infineon Technolog
 
 ---------------------------------------------------------
 
-(c) 2025, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
+(c) 2025-2026, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.
 This software, associated documentation and materials ("Software") is owned by Infineon Technologies AG or one of its affiliates ("Infineon") and is protected by and subject to worldwide patent protection, worldwide copyright laws, and international treaty provisions. Therefore, you may use this Software only as provided in the license agreement accompanying the software package from which you obtained this Software. If no license agreement applies, then any use, reproduction, modification, translation, or compilation of this Software is prohibited without the express written permission of Infineon.
 <br>
 Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF THIRD-PARTY RIGHTS AND IMPLIED WARRANTIES SUCH AS WARRANTIES OF FITNESS FOR A SPECIFIC USE/PURPOSE OR MERCHANTABILITY. Infineon reserves the right to make changes to the Software without notice. You are responsible for properly designing, programming, and testing the functionality and safety of your intended application of the Software, as well as complying with any legal requirements related to its use. Infineon does not guarantee that the Software will be free from intrusion, data theft or loss, or other breaches (“Security Breaches”), and Infineon shall have no liability arising out of any Security Breaches. Unless otherwise explicitly approved by Infineon, the Software may not be used in any application where a failure of the Product or any consequences of the use thereof can reasonably be expected to result in personal injury.

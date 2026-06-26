@@ -2,13 +2,15 @@
 
 ## Design and implementation
 
-This project supports three displays :
+This project supports four displays :
 
-   **[Waveshare 4.3-inch Raspberry Pi DSI LCD display](https://www.waveshare.com/4.3inch-DSI-LCD.htm):** The LCD houses a Chipone ICN6211 display controller and uses the MIPI DSI interface. This display is supported by default
+   **[Waveshare 4.3-inch Raspberry Pi DSI LCD display](https://www.waveshare.com/4.3inch-DSI-LCD.htm):** The LCD houses a Chipone ICN6211 display controller and uses the MIPI DSI interface. This display is supported by default in the code example for all BSPs except KIT_PSE84_HMI
 
    **[Waveshare 7-inch Raspberry Pi DSI LCD C display](https://www.waveshare.com/7inch-dsi-lcd-c.htm)**: The LCD houses a Chipone ICN6211 display controller and uses the MIPI DSI interface
 
    **[10.1 inch WF101JTYAHMNB0](https://www.winstar.com.tw/products/tft-lcd/ips-tft/ips-touch.html):** The TFT LCD houses a [EK79007AD3](https://www.crystalfontz.com/controllers/Fitipower/EK79007AD3/505/) display controller and uses the MIPI DSI interface 
+
+   **[ST7701S 4-inch MIPI DSI display driver](https://www.rocktech.com.hk/lcd-product/rk040hf001):** The TFT LCD houses a [ST7701S](https://datasheet4u.com/pdf-down/S/T/7/ST7701-Sitronix.pdf) display controller and uses the MIPI DSI interface. This display by default equipped with the KIT_PSE84_HMI
 
 The design of this application is minimalistic to get started with code examples on PSOC&trade; Edge MCU devices. All PSOC&trade; Edge E84 MCU applications have a dual-CPU three-project structure to develop code for the CM33 and CM55 cores. The CM33 core has two separate projects for the secure processing environment (SPE) and non-secure processing environment (NSPE). A project folder consists of various subfolders, each denoting a specific aspect of the project. The three project folders are as follows:
 

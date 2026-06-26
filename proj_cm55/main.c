@@ -57,6 +57,8 @@
 #include "mtb_display_ek79007ad3.h"
 #elif defined(MTB_DISPLAY_W4P3INCH_RPI)
 #include "mtb_disp_dsi_waveshare_4p3.h"
+#elif defined(MTB_DISPLAY_R4INCH_TFT)
+#include "mtb_display_st7701s.h"
 #endif
 
 #include "lv_port_disp.h"
@@ -149,6 +151,18 @@ mtb_display_ek79007ad3_pin_config_t ek79007ad3_pin_cfg =
 {
     .reset_port = CYBSP_DISP_RST_PORT,
     .reset_pin  = CYBSP_DISP_RST_PIN,
+};
+#endif
+
+#if defined(MTB_DISPLAY_R4INCH_TFT)
+/* Backlight configuration. */
+mtb_display_st7701s_backlight_config_t st7701s_backlight_cfg =
+{
+    .bl_port    = CYBSP_DISP_BACKLIGHT_PWM_PORT,
+    .bl_pin     = CYBSP_DISP_BACKLIGHT_PWM_PIN,
+    .pwm_hw     = CYBSP_PWM_DISP_BACKLIGHT_HW,
+    .pwm_num    = CYBSP_PWM_DISP_BACKLIGHT_NUM,
+    .pwm_config = &CYBSP_PWM_DISP_BACKLIGHT_config
 };
 #endif
 
@@ -490,7 +504,7 @@ static void cm55_gfx_task(void *arg)
     cy_en_gfx_status_t gfx_status = CY_GFX_SUCCESS;
     vg_lite_error_t vglite_status = VG_LITE_SUCCESS;
 
-#if defined(MTB_DISPLAY_WS7P0DSI_RPI)
+#if defined(MTB_DISPLAY_WS7P0DSI_RPI) || defined(MTB_DISPLAY_R4INCH_TFT)
     cy_rslt_t status = CY_RSLT_SUCCESS;
 #elif defined(MTB_DISPLAY_EK79007AD3)
     cy_en_mipidsi_status_t mipi_status = CY_MIPIDSI_SUCCESS;
@@ -636,6 +650,19 @@ static void cm55_gfx_task(void *arg)
             printf("Waveshare 4.3-Inch display init failed with status = %u\r\n", (unsigned int) i2c_result);
             CY_ASSERT(0);
         }
+
+#elif defined(MTB_DISPLAY_R4INCH_TFT)
+        /* Initialize the R4INCH display */
+        status = mtb_display_st7701s_init(GFXSS_GFXSS_MIPIDSI, &st7701s_backlight_cfg);
+        if(CY_RSLT_SUCCESS  != status)
+        {
+            printf("st7701s 4-inch display init failed with status = %u\r\n", (unsigned int) status);
+            CY_ASSERT(0);
+        }
+
+        /* Set backlight brightness to 80% */
+        uint8_t brightness_level = 80U;
+        mtb_display_st7701s_set_brightness(brightness_level);
 #endif
         /* Allocate memory for VGLite from the vglite_heap_base */
         vg_module_parameters_t vg_params;
