@@ -51,14 +51,13 @@ TOOLCHAIN=GCC_ARM
 # launch configurations for your IDE.
 CONFIG=Debug
 
-# Set to 1 to run the benchmark LVGL widget demo.
+# Set "DEMO_BENCHMARK" to execute the LVGL benchmark demo.
 # When enabled, the build configuration is automatically set to Release
 # for accurate performance measurements.
 DEMO_BENCHMARK?=0
 
 ifeq ($(DEMO_BENCHMARK), 1)
-CONFIG=Release
-DEFINES+=LV_USE_DEMO_BENCHMARK=$(DEMO_BENCHMARK)
+override CONFIG=Release
 endif
 
 ############################# Display module ###################################
@@ -80,9 +79,9 @@ endif
 #   CONFIG_DISPLAY = W4P3INCH_DISP
 # Note: R4INCH_DISP is supported only for KIT_PSE84_HMI
 ifeq ($(filter APP_KIT_PSE84_HMI KIT_PSE84_HMI, $(TARGET)), $(TARGET))
-CONFIG_DISPLAY = R4INCH_DISP
+CONFIG_DISPLAY=R4INCH_DISP
 else
-CONFIG_DISPLAY = W4P3INCH_DISP
+CONFIG_DISPLAY=W4P3INCH_DISP
 endif
 
 # Validate display selection for KIT_PSE84_AI target.
@@ -90,6 +89,11 @@ ifneq ($(filter APP_KIT_PSE84_AI KIT_PSE84_AI, $(TARGET)),)
 ifeq ($(CONFIG_DISPLAY), WF101JTYAHMNB0_DISP)
 $(error WF101JTYAHMNB0_DISP is not supported for $(TARGET). Supported displays are: WS7P0DSI_RPI_DISP, W4P3INCH_DISP)
 endif
+endif
+
+# Suppress L6439W (multiply defined weak symbol) for ARM toolchain
+ifeq ($(TOOLCHAIN), ARM)
+LDFLAGS+=--diag_suppress=L6439W
 endif
 
 ################################################################################

@@ -119,6 +119,7 @@ INCLUDES+=
 
 # Add additional defines to the build process (without a leading -D).
 DEFINES+=CY_RETARGET_IO_CONVERT_LF_TO_CRLF _BAREMETAL=0
+DEFINES+=LV_USE_DEMO_BENCHMARK=$(DEMO_BENCHMARK)
 
 # Check which kit is being used
 ifeq (APP_KIT_PSE84_AI, $(TARGET))
@@ -126,11 +127,74 @@ DEFINES+=USE_KIT_PSE84_AI
 endif
 
 # Ignore unused LVGL middleware files from compilation
-CY_IGNORE += $(SEARCH_lvgl)/src/others/vg_lite_tvg $(SEARCH_lvgl)/src/libs/thorvg $(SEARCH_lvgl)/tests
-CY_IGNORE += $(SEARCH_lvgl)/draw/nxp $(SEARCH_lvgl)/draw/renesas $(SEARCH_lvgl)/examples
-CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_draw_vg_lite.c $(SEARCH_lvgl)/src/draw/vg_lite/lv_vg_lite_utils.c
-CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_draw_vg_lite_img.c $(SEARCH_lvgl)/src/draw/sw/blend/helium
-CY_IGNORE += $(SEARCH_lvgl)/src/draw/sw/blend/neon $(SEARCH_lvgl)/src/core/lv_refr.c
+# --- Platform-specific draw backends (not needed for PSOC Edge) ---
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/nxp
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/renesas
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/dma2d
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/espressif
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/eve
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/nanovg
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/nema_gfx
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/opengles
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/sdl
+# Unused converts (premultiply uses C fallback; blend uses helium)
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/convert/helium
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/convert/neon
+# --- Architecture-specific SW blend (not for CM55) ---
+# Helium is ENABLED: ignore other MVE acceleration
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/sw/blend/neon
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/sw/blend/arm2d
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/sw/blend/riscv_v
+# --- Unused libraries ---
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/thorvg
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/FT800-FT813
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/frogfs
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/gltf
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/gstreamer
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/libwebp
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/nanovg
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/svg
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/vg_lite_driver
+# --- Unused debugging/test/simulator ---
+CY_IGNORE += $(SEARCH_lvgl)/src/debugging/test
+CY_IGNORE += $(SEARCH_lvgl)/src/debugging/vg_lite_tvg
+CY_IGNORE += $(SEARCH_lvgl)/src/debugging/monkey
+# --- Unused test suites, examples, env support ---
+CY_IGNORE += $(SEARCH_lvgl)/tests
+CY_IGNORE += $(SEARCH_lvgl)/examples
+CY_IGNORE += $(SEARCH_lvgl)/env_support
+# --- Unused display/input/draw drivers (we use custom lv_port_disp/indev) ---
+CY_IGNORE += $(SEARCH_lvgl)/src/drivers
+# --- Unused libraries (ignoring saves significant ITCM) ---
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/barcode
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/ffmpeg
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/freetype
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/fsdrv
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/gif
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/libjpeg_turbo
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/libpng
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/lz4
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/rlottie
+CY_IGNORE += $(SEARCH_lvgl)/src/libs/tiny_ttf
+# --- Unused widgets ---
+CY_IGNORE += $(SEARCH_lvgl)/src/widgets/property
+CY_IGNORE += $(SEARCH_lvgl)/src/widgets/3dtexture
+CY_IGNORE += $(SEARCH_lvgl)/src/widgets/gif
+CY_IGNORE += $(SEARCH_lvgl)/src/widgets/lottie
+CY_IGNORE += $(SEARCH_lvgl)/src/widgets/arclabel
+# --- Unused stdlib variants ---
+CY_IGNORE += $(SEARCH_lvgl)/src/stdlib/micropython
+CY_IGNORE += $(SEARCH_lvgl)/src/stdlib/rtthread
+CY_IGNORE += $(SEARCH_lvgl)/src/stdlib/uefi
+# --- Unused font manager ---
+CY_IGNORE += $(SEARCH_lvgl)/src/font/font_manager
+# --- Unused demos ---
+CY_IGNORE += $(SEARCH_lvgl)/demos/gltf
+CY_IGNORE += $(SEARCH_lvgl)/demos/render
+CY_IGNORE += $(SEARCH_lvgl)/demos/vector_graphic
+CY_IGNORE += $(SEARCH_lvgl)/demos/keypad_encoder
+CY_IGNORE += $(SEARCH_lvgl)/demos/stress
+# --- Music demo assets (local overrides exist) ---
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_1.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_2.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_3.c
@@ -152,18 +216,50 @@ CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_list_border.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_slider_knob.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_wave_bottom.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_wave_top.c
-
-
+# Large versions (local overrides exist)
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_1_large.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_2_large.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_cover_3_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_list_pause_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_list_play_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_loop_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_next_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_pause_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_play_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_prev_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_btn_rnd_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_corner_left_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_corner_right_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_icon_1_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_icon_2_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_icon_3_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_icon_4_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_list_border_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_slider_knob_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_wave_bottom_large.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/assets/img_lv_demo_music_wave_top_large.c
+# --- Benchmark demo assets (local overrides exist) ---
 CY_IGNORE += $(SEARCH_lvgl)/demos/benchmark/assets/img_benchmark_avatar.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/benchmark/assets/img_benchmark_cogwheel_argb.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/benchmark/assets/img_benchmark_cogwheel_rgb.c
-
+# --- Widget demo assets (local overrides exist) ---
 CY_IGNORE += $(SEARCH_lvgl)/demos/widgets/assets/img_clothes.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/widgets/assets/img_demo_widgets_avatar.c
 CY_IGNORE += $(SEARCH_lvgl)/demos/widgets/assets/img_lvgl_logo.c
+# --- Ignore mtb_shared originals; patched versions are in proj_cm55 ---
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_draw_vg_lite.c
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_draw_vg_lite_img.c
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/vg_lite/lv_vg_lite_utils.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/lv_demo_music.c
+CY_IGNORE += $(SEARCH_lvgl)/demos/music/lv_demo_music_main.c
+# --- Helium convert: local override skips helium premultiply (uses C fallback) ---
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/convert/lv_draw_buf_convert.c
+
+# IAR assembler cannot process GCC-style C preprocessing in .S files
+# The LVGL helium blend assembly is not compatible with IAR
+ifeq ($(TOOLCHAIN), IAR)
+CY_IGNORE += $(SEARCH_lvgl)/src/draw/sw/blend/helium
+endif
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT+=
@@ -187,7 +283,10 @@ CXXFLAGS+=
 ASFLAGS+=
 
 # Additional / custom linker flags.
-LDFLAGS+=
+# Suppress GNU-stack warning emitted by Helium blend assembly
+ifeq ($(TOOLCHAIN), GCC_ARM)
+LDFLAGS+=-Wl,--no-warn-execstack
+endif
 
 # Additional / custom libraries to link in to the application.
 LDLIBS+=

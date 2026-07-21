@@ -47,7 +47,7 @@
 
 
 #if LV_COLOR_DEPTH == 16
-    #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)) 
+    #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
 #elif LV_COLOR_DEPTH == 32
     #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_ARGB8888))
 #endif
@@ -56,13 +56,30 @@
 /*******************************************************************************
 * Global Variables
 *******************************************************************************/
+/* A second full-screen buffer is only needed for double-buffer configurations.
+ * Single-buffer mode always uses one buffer - including single-buffer DIRECT
+ * (partial) mode, where the live frame buffer the display controller is
+ * scanning already holds the previous frame, so LVGL can redraw just the dirty
+ * areas straight into it without a second buffer.
+ *
+ * Each full-screen buffer is MY_DISP_HOR_RES x MY_DISP_VER_RES x BYTE_PER_PIXEL.
+ * For the default 4.3-inch display that is 832 x 480 x 2 = 798,720 B (~780 KB):
+ *   - Double-buffer FULL/DIRECT : 2 buffers -> ~1560 KB
+ *   - Single-buffer FULL/DIRECT : 1 buffer  -> ~780 KB  (~50% saving) */
+
 CY_SECTION(".cy_gpu_buf") LV_ATTRIBUTE_MEM_ALIGN uint8_t disp_buf1[MY_DISP_HOR_RES *
                                                MY_DISP_VER_RES * BYTE_PER_PIXEL];
+#if !USE_SINGLE_BUFFER_MODE
 CY_SECTION(".cy_gpu_buf") LV_ATTRIBUTE_MEM_ALIGN uint8_t disp_buf2[MY_DISP_HOR_RES *
-                                               MY_DISP_VER_RES * BYTE_PER_PIXEL]; 
+                                               MY_DISP_VER_RES * BYTE_PER_PIXEL];
+#endif
 /* Frame buffers used by GFXSS to render UI */
 void *frame_buffer1 = &disp_buf1;
+#if !USE_SINGLE_BUFFER_MODE
 void *frame_buffer2 = &disp_buf2;
+#else
+void *frame_buffer2 = NULL;  /* Single-buffer mode: no second buffer */
+#endif
 
 cy_stc_gfx_context_t gfx_context;
 
@@ -71,9 +88,9 @@ cy_stc_gfx_context_t gfx_context;
 * Function Name: disp_flush
 ********************************************************************************
 * Summary:
-*  Flush the content of the internal buffer the specific area on the display.
+*  Flush the content of the internal buffer to the specific area on the display.
 *  You can use DMA or any hardware acceleration to do this operation in the
-*  background but 'lv_disp_flush_ready()' has to be called when finished.
+*  background but 'lv_display_flush_ready()' has to be called when finished.
 *
 * Parameters:
 *  *disp_drv: Pointer to the display driver structure to be registered by HAL.
@@ -90,6 +107,33 @@ static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv,
 {
     CY_UNUSED_PARAMETER(area);
 
+#if USE_PARTIAL_RENDER_MODE
+    /* DIRECT mode: LVGL calls disp_flush once per dirty area.
+     * Only swap framebuffers on the LAST area - otherwise we would wait
+     * for vsync N times per frame (one per dirty rectangle), killing FPS.
+     * For intermediate areas, just signal ready immediately. */
+    if(lv_display_flush_is_last(disp_drv))
+    {
+        /* Drain any stale vsync notification that arrived while LVGL was rendering.
+         * Without this, the wait below can consume an OLD vsync that fired before
+         * Set_FrameBuffer — meaning LVGL starts writing to the previous front buffer
+         * while the DC is still reading it, causing visible flicker. */
+        ulTaskNotifyTake(pdTRUE, 0);
+
+        Cy_GFXSS_Set_FrameBuffer((GFXSS_Type*) GFXSS, (uint32_t*) color_p,
+                &gfx_context);
+
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    /* Inform the graphics library that you are ready with the flushing */
+    lv_display_flush_ready(disp_drv);
+#else
+    /* Drain any stale vsync notification that arrived while LVGL was rendering.
+     * Without this, the wait below can consume an OLD vsync that fired before
+     * Set_FrameBuffer - meaning LVGL starts writing to the previous front buffer
+     * while the DC is still reading it, causing visible flicker. */
+    ulTaskNotifyTake(pdTRUE, 0);
+
     Cy_GFXSS_Set_FrameBuffer((GFXSS_Type*) GFXSS, (uint32_t*) color_p,
             &gfx_context);
 
@@ -98,7 +142,7 @@ static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv,
         /* Inform the graphics library that you are ready with the flushing */
         lv_display_flush_ready(disp_drv);
     }
-
+#endif
 }
 
 
@@ -106,9 +150,9 @@ static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv,
 * Function Name: lv_port_disp_init
 ********************************************************************************
 * Summary:
-*  Initialization function for display devices supported by LittelvGL.
+*  Initialization function for display devices supported by LVGL.
 *   LVGL requires a buffer where it internally draws the widgets.
-*   Later this buffer will passed to your display driver's `flush_cb` to copy
+*   Later this buffer will be passed to your display driver's `flush_cb` to copy
 *   its content to your display.
 *   The buffer has to be greater than 1 display row
 *
@@ -121,7 +165,7 @@ static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv,
 *      display.
 *      You should use DMA to write the buffer's content to the display.
 *      It will enable LVGL to draw the next part of the screen to the other
-*      buffer while the data is being sent form the first buffer.
+*      buffer while the data is being sent from the first buffer.
 *      It makes rendering and flushing parallel.
 *
 *   3. Double buffering
@@ -139,7 +183,9 @@ static void LV_ATTRIBUTE_FAST_MEM disp_flush(lv_display_t *disp_drv,
 void lv_port_disp_init(void)
 {
     memset(disp_buf1, 0, sizeof(disp_buf1));
+#if !USE_SINGLE_BUFFER_MODE
     memset(disp_buf2, 0, sizeof(disp_buf2));
+#endif
 
     lv_display_t * disp = lv_display_create(MY_DISP_HOR_RES, MY_DISP_VER_RES);
 
@@ -147,8 +193,34 @@ void lv_port_disp_init(void)
 
     lv_tick_set_cb(xTaskGetTickCount);
 
-    lv_display_set_buffers(disp, disp_buf1, disp_buf2, sizeof(disp_buf1),
-                           LV_DISPLAY_RENDER_MODE_FULL);
+    /* Use explicit stride to prevent stride_is_auto recalculation.
+     * Buffer is MY_DISP_HOR_RES(832) wide for VG-Lite 16px alignment,
+     * but logical display is ACTUAL_DISP_HOR_RES(800).
+     * Without explicit stride, lv_refr.c recalculates stride from buf_area width (800)
+     * instead of buffer width (832), causing garbled display output. */
+    uint32_t buf_stride = MY_DISP_HOR_RES * LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_NATIVE);
+#if USE_PARTIAL_RENDER_MODE
+#if USE_SINGLE_BUFFER_MODE
+    /* Single-buffer DIRECT mode: LVGL redraws only the invalidated (animated)
+     * areas directly into the one frame buffer the display controller scans.
+     * Static regions are never rewritten, so tearing is confined to the small
+     * areas that actually change (e.g. the music-player spectrum/album art)
+     * instead of the whole screen, while still using a single ~780 KB buffer. */
+    lv_display_set_buffers_with_stride(disp, disp_buf1, NULL, sizeof(disp_buf1),
+                                       buf_stride, LV_DISPLAY_RENDER_MODE_DIRECT);
+#else
+    lv_display_set_buffers_with_stride(disp, disp_buf1, disp_buf2, sizeof(disp_buf1),
+                                       buf_stride, LV_DISPLAY_RENDER_MODE_DIRECT);
+#endif
+#elif USE_SINGLE_BUFFER_MODE
+    /* Single-buffer FULL mode: pass NULL as the second buffer so LVGL renders
+     * into the single frame buffer that the display controller scans out. */
+    lv_display_set_buffers_with_stride(disp, disp_buf1, NULL, sizeof(disp_buf1),
+                                       buf_stride, LV_DISPLAY_RENDER_MODE_FULL);
+#else
+    lv_display_set_buffers_with_stride(disp, disp_buf1, disp_buf2, sizeof(disp_buf1),
+                                       buf_stride, LV_DISPLAY_RENDER_MODE_FULL);
+#endif
 
     /* Set the display resolution to match the physical resolution so that
      * LVGL renders the UI within the limits of the actual display resolution.

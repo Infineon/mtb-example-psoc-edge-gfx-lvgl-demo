@@ -99,9 +99,25 @@ define block RAM_APP with alignment = 4
   readwrite code object *cyabs*.*,
   readwrite code object *cy_worker_thread.*,
   readwrite code object *cmsis*.*,
+  /* LVGL hot-path code in ITCM (core rendering + draw backends + helium blend) */
+  readwrite code object */lvgl/src/core/*.*,
+  readwrite code object */lvgl/src/draw/*.*,
+  readwrite code object */lvgl/src/display/*.*,
+  readwrite code object */lvgl/src/misc/*.*,
+  readwrite code object */lvgl/src/tick/*.*,
+  readwrite code object */lvgl/src/indev/*.*,
+  readwrite code object */lvgl/src/layouts/*.*,
+  readwrite code object */lvgl/src/osal/*.*
+};
+
+/* Define a block for less performance-sensitive LVGL code to be executed in SOC memory */
+define block SOCMEM_LVGL with alignment = 4
+{
+  /* Demo code moved from ITCM to free space for helium blend acceleration */
   readwrite code object */lvgl/demos/music/*.*,
-  readwrite code object */lvgl/src/*.*,
-  readwrite code object */lvgl/demos/widgets/*.*
+  readwrite code object */lvgl/demos/widgets/*.*,
+  /* Less perf-critical LVGL code: fonts, widgets, stdlib, themes, others, lv_init, etc. */
+  readwrite code object */lvgl/src/*.*
 };
 
 /* Define the stack and heap blocks */
@@ -150,9 +166,17 @@ initialize by copy
   readonly object *cyabs*.*,
   readonly object *cy_worker_thread.*,
   readonly object *cmsis*.*,
+  readonly object */lvgl/src/core/*.*,
+  readonly object */lvgl/src/draw/*.*,
+  readonly object */lvgl/src/display/*.*,
+  readonly object */lvgl/src/misc/*.*,
+  readonly object */lvgl/src/tick/*.*,
+  readonly object */lvgl/src/indev/*.*,
+  readonly object */lvgl/src/layouts/*.*,
+  readonly object */lvgl/src/osal/*.*,
   readonly object */lvgl/demos/music/*.*,
-  readonly object */lvgl/src/*.*,
-  readonly object */lvgl/demos/widgets/*.*
+  readonly object */lvgl/demos/widgets/*.*,
+  readonly object */lvgl/src/*.*
 };
 
 /* Placement */
@@ -171,7 +195,7 @@ place in m55_code_INTERNAL { section .ram_vectors, block RAM_APP };
 
 /* System SRAM (SoCMEM), 5 MB */
 /* A piece intended for less performance-sensitive or critical functions that might be executed in SOC memory */
-place in m55_code_secondary { section .cy_socmem_code };
+place in m55_code_secondary { section .cy_socmem_code, block SOCMEM_LVGL };
 /* A piece intended for shared RAM memory where only the Cortex-M55 can allocate data but all cores can access */
 place in m55_allocatable_shared { section .cy_sharedmem };
 

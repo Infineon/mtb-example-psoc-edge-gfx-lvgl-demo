@@ -103,10 +103,6 @@
 /* Define the LPTimer interrupt priority number. '1' implies highest priority.*/
 #define APP_LPTIMER_INTERRUPT_PRIORITY      (1U)
 
-#if LV_USE_DEMO_BENCHMARK
-#define BENCHMARK_DONE_CHECK_PERIOD_MS      (500U)
-#endif
-
 #if ( configGENERATE_RUN_TIME_STATS == 1 )
 #define TCPWM_TIMER_INT_PRIORITY            (1U)
 #endif
@@ -433,40 +429,25 @@ static void disp_touch_i2c_controller_interrupt(void)
 
 #if LV_USE_DEMO_BENCHMARK
 /*******************************************************************************
-* Function Name: check_benchmark_done_cb
+* Function Name: benchmark_end_cb
 ********************************************************************************
 * Summary:
-*  This timer callback polls for the completion of the LVGL benchmark.
-*
-*  Once all test cases finish, the benchmark demo replaces the screen content
-*  with a results table. When the table is detected as the first child of the
-*  active screen, the callback re-enables touch input (which was disabled
-*  during the benchmark to reduce CPU load) and deletes the one-shot timer.
-*
-*  Touch input is intentionally disabled while the benchmark is running
-*  because the hardware touch controller operates in polling mode, which
-*  would add unnecessary CPU overhead.
+*  Called by lv_demo_benchmark() when all test scenes have completed.
+*  Initializes touch, then displays the summary results table.
 *
 * Parameters:
-*  lv_timer_t *t: Pointer to the LVGL timer that triggered this callback
+*  lv_demo_benchmark_summary_t *summary: Pointer to the benchmark summary.
 *
 * Return:
 *  void
 *
 *******************************************************************************/
-static void check_benchmark_done_cb(lv_timer_t *t)
+static void benchmark_end_cb(const lv_demo_benchmark_summary_t *summary)
 {
-    lv_obj_t *scr = lv_screen_active();
+    /* Initialise touch after benchmark so touch polling does not affect scores. */
+    lv_port_indev_init();
 
-    /* The benchmark summary screen places a table as the first child of the
-     * active screen once all test cases have completed. */
-    if ((lv_obj_get_child_count(scr) > 0) &&
-        (lv_obj_check_type(lv_obj_get_child(scr, 0), &lv_table_class)))
-    {
-        /* Benchmark is done - re-enable touch so the user can scroll results */
-        lv_port_indev_init();
-        lv_timer_delete(t);
-    }
+    lv_demo_benchmark_summary_display(summary);
 }
 #endif
 
@@ -479,7 +460,7 @@ static void check_benchmark_done_cb(lv_timer_t *t)
 *   It initializes:
 *       - GFX subsystem.
 *       - Configure the DC, GPU interrupts.
-*       - Initialize I2C interface to be used for touch as well as 7, 4.3-inch 
+*       - Initialize I2C interface to be used for touch as well as 7, 4.3-inch
 *         display drivers.
 *       - Initializes the display panel selected through Makefile component and
 *         vglite driver.
@@ -525,7 +506,7 @@ static void cm55_gfx_task(void *arg)
     GFXSS_config.dc_cfg->gfx_layer_config->width  = MY_DISP_HOR_RES;
     GFXSS_config.dc_cfg->gfx_layer_config->height = MY_DISP_VER_RES;
     GFXSS_config.dc_cfg->display_width            = MY_DISP_HOR_RES;
-    GFXSS_config.dc_cfg->display_height           = MY_DISP_VER_RES; 
+    GFXSS_config.dc_cfg->display_height           = MY_DISP_VER_RES;
 
     /* Set frame buffer address to the GFXSS configuration structure */
     GFXSS_config.dc_cfg->gfx_layer_config->buffer_address    = frame_buffer1;
@@ -615,34 +596,7 @@ static void cm55_gfx_task(void *arg)
         }
 
 #elif defined(MTB_DISPLAY_W4P3INCH_RPI)
-
-        i2c_result = Cy_SCB_I2C_Init(DISPLAY_I2C_CONTROLLER_HW,
-                                     &DISPLAY_I2C_CONTROLLER_config,
-                                     &disp_touch_i2c_controller_context);
-
-        if (CY_SCB_I2C_SUCCESS != i2c_result)
-        {
-            printf("I2C controller initialization failed !!\n");
-            CY_ASSERT(0);
-        }
-
-        /* Initialize the I2C interrupt */
-        sysint_status = Cy_SysInt_Init(&disp_touch_i2c_controller_irq_cfg,
-                                       &disp_touch_i2c_controller_interrupt);
-
-        if (CY_SYSINT_SUCCESS != sysint_status)
-        {
-            printf("I2C controller interrupt initialization failed\r\n");
-            CY_ASSERT(0);
-        }
-
-        /* Enable the I2C interrupts. */
-        NVIC_EnableIRQ(disp_touch_i2c_controller_irq_cfg.intrSrc);
-
-        /* Enable the I2C */
-        Cy_SCB_I2C_Enable(DISPLAY_I2C_CONTROLLER_HW);
-
-         /* Initialize the Waveshare 4.3-Inch display */
+        /* Initialize the Waveshare 4.3-Inch display */
         i2c_result = mtb_disp_waveshare_4p3_init(DISPLAY_I2C_CONTROLLER_HW,
                                              &disp_touch_i2c_controller_context);
         if (CY_SCB_I2C_SUCCESS != i2c_result)
@@ -682,18 +636,19 @@ static void cm55_gfx_task(void *arg)
 
         if (VG_LITE_SUCCESS == vglite_status)
         {
+
             /* Initialize LVGL library */
             lv_init();
+
             lv_port_disp_init();
 
 #if LV_USE_DEMO_BENCHMARK
+            /* Register our end callback - LVGL calls it when all scenes finish.
+             * Touch is initialized there, so polling does not affect benchmark scores. */
+            lv_demo_benchmark_set_end_cb(benchmark_end_cb);
+
             /* Run the Benchmark demo */
             lv_demo_benchmark();
-
-            /* Poll for the benchmark summary table
-             * Once detected, touch input is re-enabled and
-             * this timer is deleted. */
-            lv_timer_create(check_benchmark_done_cb, BENCHMARK_DONE_CHECK_PERIOD_MS, NULL);
 #else
             /* Initialize touch input. Skipped during benchmark to avoid the
              * CPU overhead of polling-mode touch. */

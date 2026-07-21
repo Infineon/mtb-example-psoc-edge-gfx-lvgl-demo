@@ -128,8 +128,9 @@ SECTIONS
         *(.rodata .rodata.* .constdata .constdata.* .conststring .conststring.*)
         /* Exclude certain files from this section as they will be placed in RAM */
         *(EXCLUDE_FILE(*cy_syslib.* *cy_syslib_ext.* *cy_smif.* *cy_smif_memnum.* *cy_smif_memslot.* *cy_smif_sfdp.* *cy_smif_hb_flash.* *cyhal_qspi.* *mtb_hal_memoryspi.* *mtb_serial_memory.* *freertos/Source*.* *cy_clib_support*.* *cy_mutex_pool*.* *cy_time.* *cyabs_*.* *cy_worker_thread.* *cmsis*.*
-         */lvgl/demos/music/*.*
-         */lvgl/demos/widgets/*.*) .text*)
+        */lvgl/demos/music/*.*
+        */lvgl/src/*.*
+        */lvgl/demos/widgets/*.*) .text*)
 		
 
         . = ALIGN(4);
@@ -216,8 +217,12 @@ SECTIONS
         *cyabs_*.*(.text*)
         *cy_worker_thread.*(.text*)
         *cmsis*.*(.text*)
-        */lvgl/demos/music/*.*(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
-	*/lvgl/demos/widgets/*.*(.text* .rodata .rodata* .constdata .constdata* .conststring .conststring*)
+        /* LVGL hot-path code in ITCM (core rendering + draw backends + helium blend) */
+        */lvgl/src/core/*.*(.text*)
+        */lvgl/src/draw/*.*(.text*)
+        */lvgl/src/display/*.*(.text*)
+        */lvgl/src/tick/*.*(.text*)
+        */lvgl/src/osal/*.*(.text*)
 
         . = ALIGN(4);
     } > m55_code_INTERNAL AT > m55_nvm_sel
@@ -236,6 +241,17 @@ SECTIONS
     .app_code_socmem : ALIGN(4)
     {
         KEEP(*(.cy_socmem_code))
+
+        /* Demo code moved from ITCM to free space for helium blend acceleration */
+        */lvgl/demos/music/*.*(.text*)
+        */lvgl/demos/widgets/*.*(.text*)
+        */lvgl/src/misc/*.*(.text*)
+        */lvgl/src/indev/*.*(.text*)
+        */lvgl/src/layouts/*.*(.text*)
+
+        /* Less perf-critical LVGL code: fonts, widgets, stdlib, themes, others, lv_init, etc.
+         * This catch-all captures anything in src/ not already matched by ITCM patterns above. */
+        */lvgl/src/*.*(.text*)
 
         . = ALIGN(4);
     }  > m55_code_secondary AT > m55_nvm_sel

@@ -76,7 +76,10 @@ LR_XIP_PORT0 (CYMEM_CM55_0_m55_nvm_sel_START + MCUBOOT_HEADER_SIZE) (CYMEM_CM55_
     *(InRoot$$Sections)
     .ANY (+RO)
     .ANY (+XO)
-    EXCLUDE(*cy_smif.*, *cy_syslib.*, *cy_syslib_ext.*, *cy_smif_memnum.*, *cy_smif_memslot.*, *cy_smif_sfdp.*, *cy_smif_hb_flash.*, *mtb_hal_memoryspi.*, *mtb_serial_memory.*, *freertos/Source*.*, *cy_clib_support*.*, *cy_mutex_pool*.*, *cy_time.*, *cyabs_*.*, *cy_worker_thread.*, *cmsis*.*)
+    EXCLUDE(*cy_smif.*, *cy_syslib.*, *cy_syslib_ext.*, *cy_smif_memnum.*, *cy_smif_memslot.*, *cy_smif_sfdp.*, *cy_smif_hb_flash.*, *mtb_hal_memoryspi.*, *mtb_serial_memory.*, *freertos/Source*.*, *cy_clib_support*.*, *cy_mutex_pool*.*, *cy_time.*, *cyabs_*.*, *cy_worker_thread.*, *cmsis*.*,
+    *lvgl/demos/music*.*,
+    *lvgl/src*.*,
+    *lvgl/demos/widgets*.*)
   }
 
   /* The execution region for performance-sensitive or critical functions that need to be executed in SRAM */
@@ -103,9 +106,15 @@ LR_XIP_PORT0 (CYMEM_CM55_0_m55_nvm_sel_START + MCUBOOT_HEADER_SIZE) (CYMEM_CM55_
     *cyabs_*.* (+RO)
     *cy_worker_thread.* (+RO)
     *cmsis*.* (+RO)
-    */lvgl/src*.* (+RO)
-    */lvgl/demos/music*.* (+RO)
-    */lvgl/demos/widgets*.* (+RO)
+    /* LVGL hot-path code in ITCM (core rendering + draw backends + helium blend) */
+    *lvgl/src/core*.* (+RO)
+    *lvgl/src/draw*.* (+RO)
+    *lvgl/src/display*.* (+RO)
+    *lvgl/src/misc*.* (+RO)
+    *lvgl/src/tick*.* (+RO)
+    *lvgl/src/indev*.* (+RO)
+    *lvgl/src/layouts*.* (+RO)
+    *lvgl/src/osal*.* (+RO)
     *(.itcm_data)
   }
 
@@ -113,6 +122,11 @@ LR_XIP_PORT0 (CYMEM_CM55_0_m55_nvm_sel_START + MCUBOOT_HEADER_SIZE) (CYMEM_CM55_
   app_code_socmem CYMEM_CM55_0_m55_code_secondary_START CYMEM_CM55_0_m55_code_secondary_SIZE
   {
     *(.cy_socmem_code)
+    /* Demo code moved from ITCM to free space for helium blend acceleration */
+    *lvgl/demos/music*.* (+RO)
+    *lvgl/demos/widgets*.* (+RO)
+    /* Less perf-critical LVGL code: fonts, widgets, stdlib, themes, others, lv_init, etc. */
+    *lvgl/src*.* (+RO)
   }
 
   /* A region for initialized data memory */

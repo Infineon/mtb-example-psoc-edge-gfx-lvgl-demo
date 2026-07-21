@@ -54,6 +54,8 @@
 #endif
 #include "cybsp.h"
 #include "display_i2c_config.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 
 /*******************************************************************************
@@ -71,13 +73,26 @@
 #define CTP_IRQ_PIN                (6U)
 #endif
 
-#define INDEV_READ_PERIOD_MS       100U
+/* LVGL indev timer period - can be fast since callback is just a cache read */
+#define INDEV_READ_PERIOD_MS       33U
 
+/* Background touch I2C polling interval */
+#define TOUCH_POLL_MS              33U
+#define TOUCH_TASK_STACK_SIZE      256U
+#define TOUCH_TASK_PRIORITY        (tskIDLE_PRIORITY + 1U)
+
+#define RESETVAL                   (0)
 
 /*******************************************************************************
 * Global Variables
 *******************************************************************************/
-lv_indev_t * indev_touchpad;
+/* Cached touch state - written by background task, read by LVGL callback.
+ * Single-writer on Cortex-M, so no lock needed for atomic word-sized fields. */
+static volatile int      touch_cache_x     = RESETVAL;
+static volatile int      touch_cache_y     = RESETVAL;
+static volatile uint8_t  touch_cache_state = LV_INDEV_STATE_REL;
+
+static TaskHandle_t touch_task_handle = NULL;
 
 #if defined(MTB_CTP_ILI2511)
 /* ILI2511 touch controller configuration */
@@ -153,21 +168,78 @@ static void touchpad_init(void)
 
 
 /*******************************************************************************
+* Function Name: touch_poll_task
+********************************************************************************
+* Summary:
+*  Background FreeRTOS task that polls the touch controller via I2C at a fixed
+*  interval. Results are stored in volatile cache variables so the LVGL indev
+*  callback can read them without any I2C overhead (zero blocking of the
+*  rendering thread).
+*
+* Parameters:
+*  void *arg: Pointer to the argument passed to the task (not used)
+*
+* Return:
+*  void
+*
+*******************************************************************************/
+static void touch_poll_task(void *arg)
+{
+    (void)arg;
+    int tx = RESETVAL, ty = RESETVAL;
+
+    for (;;)
+    {
+        uint8_t st = LV_INDEV_STATE_REL;
+
+#if defined(MTB_CTP_GT911)
+        cy_rslt_t res = mtb_gt911_get_single_touch(DISPLAY_I2C_CONTROLLER_HW,
+                                                    &disp_touch_i2c_controller_context,
+                                                    &tx, &ty);
+        if (CY_RSLT_SUCCESS == res)
+        {
+            st = LV_INDEV_STATE_PR;
+        }
+#elif defined(MTB_CTP_ILI2511)
+        cy_rslt_t res = mtb_ctp_ili2511_get_single_touch(&tx, &ty);
+        if (CY_RSLT_SUCCESS == res)
+        {
+            st = LV_INDEV_STATE_PR;
+        }
+#elif defined(MTB_CTP_FT5406)
+        mtb_ctp_touch_event_t ev;
+        cy_rslt_t res = (cy_rslt_t)mtb_ctp_ft5406_get_single_touch(&ev, &tx, &ty);
+        if ((CY_RSLT_SUCCESS == res) &&
+            ((MTB_CTP_TOUCH_DOWN == ev) || (MTB_CTP_TOUCH_CONTACT == ev)))
+        {
+            st = LV_INDEV_STATE_PR;
+        }
+#elif defined(MTB_CTP_FT5446)
+        cy_rslt_t res = mtb_ctp_ft5446_get_single_touch(&tx, &ty);
+        if (CY_RSLT_SUCCESS == res)
+        {
+            st = LV_INDEV_STATE_PR;
+        }
+#endif
+
+        /* Update cache - single writer, word-sized stores are atomic on Cortex-M */
+        touch_cache_x     = tx;
+        touch_cache_y     = ty;
+        touch_cache_state = st;
+
+        vTaskDelay(pdMS_TO_TICKS(TOUCH_POLL_MS));
+    }
+}
+
+
+/*******************************************************************************
 * Function Name: touchpad_read
 ********************************************************************************
 * Summary:
-*  Touchpad read function called by the LVGL library.
-*  Here you will find example implementation of input devices supported by
-*  LVGL:
-*   - Touchpad
-*   - Mouse (with cursor support)
-*   - Keypad (supports GUI usage only with key)
-*   - Encoder (supports GUI usage only with: left, right, push)
-*   - Button (external buttons to press points on the screen)
-*
-*   The `..._read()` function are only examples.
-*   You should shape them according to your hardware.
-*
+*  Touchpad read function called periodically by the LVGL library. It returns
+*  the latest touch state and coordinates from the cache populated by the
+*  background touch polling task, so it performs no I2C access and never blocks
+*  the rendering thread.
 *
 * Parameters:
 *  *indev_drv: Pointer to the input driver structure to be registered by LVGL.
@@ -180,58 +252,18 @@ static void touchpad_init(void)
 LV_ATTRIBUTE_FAST_MEM void touchpad_read(lv_indev_t *indev_drv,
                                          lv_indev_data_t *data)
 {
-    static int touch_x = 0;
-    static int touch_y = 0;
-    cy_rslt_t result   = CY_RSLT_SUCCESS;
+    (void)indev_drv;
 
-    data->state = LV_INDEV_STATE_REL;
-
-#if defined(MTB_CTP_GT911)
-    result = mtb_gt911_get_single_touch(DISPLAY_I2C_CONTROLLER_HW,
-                                        &disp_touch_i2c_controller_context,
-                                        &touch_x,
-                                        &touch_y);
-
-    if (CY_RSLT_SUCCESS == result)
-    {
-        data->state = LV_INDEV_STATE_PR;
-    }
-#elif defined(MTB_CTP_ILI2511)
-    result = mtb_ctp_ili2511_get_single_touch(&touch_x, &touch_y);
-
-    if (CY_RSLT_SUCCESS == result)
-    {
-        data->state = LV_INDEV_STATE_PR;
-    }
-#elif defined(MTB_CTP_FT5406)
-    mtb_ctp_touch_event_t touch_event;
-    result = (cy_rslt_t)mtb_ctp_ft5406_get_single_touch(&touch_event,
-                                                        &touch_x,
-                                                        &touch_y);
-
-    if ((CY_RSLT_SUCCESS == result) && ((MTB_CTP_TOUCH_DOWN == touch_event) ||
-        (MTB_CTP_TOUCH_CONTACT == touch_event)))
-    {
-        data->state = LV_INDEV_STATE_PR;
-    }
-#elif defined(MTB_CTP_FT5446)
-    result = mtb_ctp_ft5446_get_single_touch(&touch_x, &touch_y);
-    if ((CY_RSLT_SUCCESS == result))
-    {
-        data->state = LV_INDEV_STATE_PR;
-    }
-#endif
+    /* Read from cache - no I2C, no blocking, no context switch */
+    data->state = (lv_indev_state_t)touch_cache_state;
 
 #if defined(MTB_CTP_FT5406)
-    /* Set the last pressed coordinates */
-    data->point.x = ACTUAL_DISP_HOR_RES - touch_x;
-    data->point.y = ACTUAL_DISP_VER_RES - touch_y;
+    data->point.x = ACTUAL_DISP_HOR_RES - touch_cache_x;
+    data->point.y = ACTUAL_DISP_VER_RES - touch_cache_y;
 #elif defined(MTB_CTP_ILI2511) || defined(MTB_CTP_GT911) || defined(MTB_CTP_FT5446)
-    /* Set the last pressed coordinates */
-    data->point.x = touch_x;
-    data->point.y = touch_y;
+    data->point.x = touch_cache_x;
+    data->point.y = touch_cache_y;
 #endif
-
 }
 
 
@@ -239,7 +271,7 @@ LV_ATTRIBUTE_FAST_MEM void touchpad_read(lv_indev_t *indev_drv,
 * Function Name: lv_port_indev_init
 ********************************************************************************
 * Summary:
-*  Initialization function for input devices supported by LittelvGL.
+*  Initialization function for input devices supported by LVGL.
 *
 * Parameters:
 *  void
@@ -250,18 +282,24 @@ LV_ATTRIBUTE_FAST_MEM void touchpad_read(lv_indev_t *indev_drv,
 *******************************************************************************/
 void lv_port_indev_init(void)
 {
-    /* Initialize your touchpad if you have. */
+    /* Initialize the touch controller hardware */
     touchpad_init();
 
-    /* Register a touchpad input device */
+    /* Start background touch polling task - does I2C reads independently
+     * of the LVGL rendering thread so touch never blocks rendering.
+     * Guard against creating a duplicate task if this is ever called twice. */
+    if (touch_task_handle == NULL)
+    {
+        xTaskCreate(touch_poll_task, "TouchPoll",
+                    TOUCH_TASK_STACK_SIZE, NULL,
+                    TOUCH_TASK_PRIORITY, &touch_task_handle);
+    }
+
+    /* Register a touchpad input device - callback just reads cache (instant) */
     lv_indev_t * indev = lv_indev_create();
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
     lv_indev_set_read_cb(indev, touchpad_read);
-    lv_timer_pause(indev->read_timer);
-    lv_timer_reset(indev->read_timer);
     lv_timer_set_period(indev->read_timer, INDEV_READ_PERIOD_MS);
-    lv_timer_resume(indev->read_timer);
-
 }
 
 

@@ -119,7 +119,6 @@ extern uint32_t SystemCoreClock;
     #endif /* RUN_TIME_STATS_PROTOTYPES_ADDED */
 #endif /* configGENERATE_RUN_TIME_STATS */
 
-
 /* Co-routine related definitions. */
 #define configUSE_CO_ROUTINES                   0
 #define configMAX_CO_ROUTINE_PRIORITIES         1

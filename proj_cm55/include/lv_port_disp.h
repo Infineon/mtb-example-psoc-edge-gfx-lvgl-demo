@@ -57,6 +57,45 @@ extern "C" {
 /*******************************************************************************
 * Macros
 *******************************************************************************/
+/* Set to 1 to use LVGL DIRECT (partial) render mode, where LVGL redraws only
+ * the dirty areas of the frame buffer each refresh. Set to 0 to use FULL
+ * render mode, where the whole screen is rendered every frame.
+ *
+ * Buffer usage now follows USE_SINGLE_BUFFER_MODE (below) in both render modes:
+ *   - DIRECT + double-buffer : 2 buffers; saves render/blit time, not RAM.
+ *   - DIRECT + single-buffer : 1 buffer (~780 KB, ~50% saving). LVGL redraws
+ *     only the changed regions straight into the live frame buffer the display
+ *     controller is scanning. Because static areas are never rewritten, any
+ *     tearing is confined to the small animated regions (e.g. the music-player
+ *     spectrum) instead of the whole screen - the recommended single-buffer
+ *     setting for mostly-static UIs such as the music-player demo.
+ * Each full-screen buffer is MY_DISP_HOR_RES x MY_DISP_VER_RES x 2 bytes; for
+ * the default 4.3-inch display that is 832x480x2 = ~780 KB per buffer. */
+#define USE_PARTIAL_RENDER_MODE (0U)
+
+/*******************************************************************************
+* RAM optimisation mode (each full-screen buffer is MY_DISP_HOR_RES x
+* MY_DISP_VER_RES x 2 bytes; for the default 4.3-inch display that is
+* 832x480x2 = ~780 KB per buffer).
+*
+*  USE_SINGLE_BUFFER_MODE 0 (default)
+*    Double-buffer. Two full-screen frame buffers (~1560 KB total). LVGL renders
+*    into the back buffer while the display controller scans out the front
+*    buffer, then the buffers are swapped on vsync. No tearing.
+*
+*  USE_SINGLE_BUFFER_MODE 1
+*    Single-buffer (~780 KB, ~50% RAM saving). LVGL renders into the same buffer
+*    the display controller is scanning out and waits for vsync before reusing
+*    it. Tearing behaviour depends on the render mode:
+*      - With FULL mode (USE_PARTIAL_RENDER_MODE 0) the whole screen is rewritten
+*        every frame, so tearing can be visible across the entire panel on any
+*        animation.
+*      - With DIRECT mode (USE_PARTIAL_RENDER_MODE 1, recommended) only the
+*        changed regions are rewritten, so tearing is limited to the small
+*        animated areas (e.g. the music-player spectrum) while the static parts
+*        of the UI stay rock-solid.
+*******************************************************************************/
+#define USE_SINGLE_BUFFER_MODE    (0U)
 
 #if defined(MTB_DISPLAY_W4P3INCH_RPI)
 #define MY_DISP_VER_RES                              (480U)

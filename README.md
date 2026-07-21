@@ -34,14 +34,14 @@ This code example has a three project structure: CM33 secure, CM33 non-secure, a
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-gfx-lvgl-demo)
 
-[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi41LjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzkyNTkiLCJTcGVjIE51bWJlciI6IjAwMi0zOTI1OSIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBHcmFwaGljcyBMVkdMIGRlbW8iLCJyaWQiOiJzYW5qZWV2Lm1hanVtZGFyQGluZmluZW9uLmNvbSIsIkRvYyB2ZXJzaW9uIjoiMi42LjAiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiSUNXIiwiRG9jIEZhbWlseSI6IlBTT0MifQ==)
 
 See [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
 
 ## Requirements
 
-- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.7 or later (tested with v3.7)
+- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.7 or later (tested with v3.8)
 - Board support package (BSP) minimum required version: 1.0.0
 - Programming language: C
 - Associated parts: All [PSOC&trade; Edge MCU](https://www.infineon.com/products/microcontroller/32-bit-psoc-arm-cortex/32-bit-psoc-edge-arm) parts
@@ -204,11 +204,17 @@ See [Using the code example](docs/using_the_code_example.md) for instructions on
 
    ![](images/lvgl-music-player.gif)
 
-8. To display CPU usage on the screen, enable the following macro in lv_conf.h:
+8. To display CPU usage and FPS on the screen, LVGL's performance monitor (`LV_USE_PERF_MONITOR`) is used, which requires the system monitor (`LV_USE_SYSMON`). In this example, *lv_conf.h* ties `LV_USE_SYSMON` to the benchmark configuration:
 
       ```
-      #define LV_USE_SYSMON 1
+      #if LV_USE_DEMO_BENCHMARK
+          #define LV_USE_SYSMON   1
+      #else
+          #define LV_USE_SYSMON   0
+      #endif
       ```
+
+   So the CPU usage indicator is enabled automatically in the benchmark demo and is disabled in the default music-player build. To show it on the music-player demo, edit *lv_conf.h* to force `LV_USE_SYSMON` to `1` (independent of `LV_USE_DEMO_BENCHMARK`).
 
    The on-screen position of the CPU usage indicator is determined by the macro:
 
@@ -256,6 +262,7 @@ Document title: *CE239259* - *PSOC&trade; Edge MCU: Graphics LVGL demo*
  2.3.0   | Updated design files to fix ModusToolbox&trade; v3.7 build warnings
  2.4.0   | Improved widget demo performance when benchmarking is enabled <br> Fixed a GPU hanging issue in the widget demo when benchmark is enabled
  2.5.0   | Added support for KIT_PSE84_HMI
+ 2.6.0   | Added support for LVGL v9.5.0, other performance improvements
 <br>
 
 
